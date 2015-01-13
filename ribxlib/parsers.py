@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from datetime import datetime
 import logging
 
 from lxml import etree
@@ -26,6 +27,7 @@ class Pipe(object):
         self.ref = ref
         self.node1 = None  # Is a manhole?
         self.node2 = None  # Is a manhole?
+        self.inspection_date = None
 
     def __str__(self):
         return self.ref
@@ -48,6 +50,7 @@ class Manhole(object):
     def __init__(self, ref):
         self.ref = ref
         self.geom = None
+        self.inspection_date = None
 
     def __str__(self):
         return self.ref
@@ -60,6 +63,7 @@ class Drain(object):
     def __init__(self, ref):
         self.ref = ref
         self.geom = None
+        self.inspection_date = None
 
     def __str__(self):
         return self.ref
@@ -101,13 +105,13 @@ class RibxParser(object):
             # AAE: node1 coordinates
             # Occurrence: 0..1
 
-            pos1 = node.xpath(
+            node_set = node.xpath(
                 'AAE/gml:point/gml:pos',  # gml:Point is correct!
                 namespaces=NAMESPACES
             )
 
-            if pos1:
-                coordinates = map(float, pos1[0].text.split())
+            if node_set:
+                coordinates = map(float, node_set[0].text.split())
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(*coordinates)
                 pipe.node1.geom = point
@@ -115,16 +119,43 @@ class RibxParser(object):
             # AAG: node2 coordinates
             # Occurrence: 0..1
 
-            pos2 = node.xpath(
+            node_set = node.xpath(
                 'AAG/gml:point/gml:pos',  # gml:Point is correct!
                 namespaces=NAMESPACES
             )
 
-            if pos2:
-                coordinates = map(float, pos2[0].text.split())
+            if node_set:
+                coordinates = map(float, node_set[0].text.split())
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(*coordinates)
                 pipe.node2.geom = point
+
+            # ABF: inspection date
+            # Occurrence: 1
+
+            inspection_date = datetime.strptime(
+                node.xpath('ABF')[0].text.strip(),
+                "%Y-%m-%d"
+            )
+
+            # ABG: inspection time
+            # Occurrence: 0..1
+
+            node_set = node.xpath('ABG')
+
+            if node_set:
+
+                inspection_time = datetime.strptime(
+                    node_set[0].text.strip(),
+                    "%H:%M"
+                ).time()
+
+                inspection_date = datetime.combine(
+                    inspection_date,
+                    inspection_time
+                )
+
+            pipe.inspection_date = inspection_date
 
         return pipes
 
@@ -145,16 +176,43 @@ class RibxParser(object):
             # CAB: manhole coordinates
             # Occurrence: 0..1
 
-            pos = node.xpath(
+            node_set = node.xpath(
                 'CAB/gml:point/gml:pos',  # gml:Point is correct!
                 namespaces=NAMESPACES
             )
 
-            if pos:
-                coordinates = map(float, pos[0].text.split())
+            if node_set:
+                coordinates = map(float, node_set[0].text.split())
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(*coordinates)
                 manhole.geom = point
+
+            # CBF: inspection date
+            # Occurrence: 1
+
+            inspection_date = datetime.strptime(
+                node.xpath('CBF')[0].text.strip(),
+                "%Y-%m-%d"
+            )
+
+            # CBG: inspection time
+            # Occurrence: 0..1
+
+            node_set = node.xpath('CBG')
+
+            if node_set:
+
+                inspection_time = datetime.strptime(
+                    node_set[0].text.strip(),
+                    "%H:%M"
+                ).time()
+
+                inspection_date = datetime.combine(
+                    inspection_date,
+                    inspection_time
+                )
+
+            manhole.inspection_date = inspection_date
 
         return manholes
 
@@ -175,15 +233,42 @@ class RibxParser(object):
             # EAB: drain coordinates
             # Occurrence: 0..1
 
-            pos = node.xpath(
+            node_set = node.xpath(
                 'EAB/gml:point/gml:pos',  # gml:Point is correct!
                 namespaces=NAMESPACES
             )
 
-            if pos:
-                coordinates = map(float, pos[0].text.split())
+            if node_set:
+                coordinates = map(float, node_set[0].text.split())
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(*coordinates)
                 drain.geom = point
+
+            # EBF: inspection date
+            # Occurrence: 1
+
+            inspection_date = datetime.strptime(
+                node.xpath('EBF')[0].text.strip(),
+                "%Y-%m-%d"
+            )
+
+            # EBG: inspection time
+            # Occurrence: 0..1
+
+            node_set = node.xpath('EBG')
+
+            if node_set:
+
+                inspection_time = datetime.strptime(
+                    node_set[0].text.strip(),
+                    "%H:%M"
+                ).time()
+
+                inspection_date = datetime.combine(
+                    inspection_date,
+                    inspection_time
+                )
+
+            drain.inspection_date = inspection_date
 
         return drains
