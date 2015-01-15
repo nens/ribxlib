@@ -30,6 +30,7 @@ class Pipe(object):
         self.node1 = None  # Is a manhole?
         self.node2 = None  # Is a manhole?
         self.inspection_date = None
+        self.media = []
 
     def __str__(self):
         return self.ref

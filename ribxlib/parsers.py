@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 import logging
 
+from enum import Enum
 from lxml import etree
 from osgeo import ogr
 
@@ -24,7 +25,12 @@ NAMESPACES = {
 }
 
 
-def parse(f):
+class Mode(Enum):
+    PREINSPECTION = 1
+    INSPECTION = 2
+
+
+def parse(f, mode):
     """Parse a GWSW.Ribx / GWSW.Ribx-A document.
 
     """
@@ -44,9 +50,9 @@ def parse(f):
     error_log = _log(parser)
 
     ribx = Ribx()
-    ribx.pipes = _pipes(tree, error_log)
-    ribx.manholes = _manholes(tree, error_log)
-    ribx.drains = _drains(tree, error_log)
+    ribx.pipes = _pipes(tree, mode, error_log)
+    ribx.manholes = _manholes(tree, mode, error_log)
+    ribx.drains = _drains(tree, mode, error_log)
 
     return ribx, error_log
 
@@ -63,15 +69,15 @@ def _log(parser, level=etree.ErrorLevels.FATAL):
     } for error in parser.error_log.filter_from_level(level)]
 
 
-def _log2(node, expr, error_log):
+def _log2(node, expr, e, error_log):
     """Append to a list of parser errors.
 
     """
-    message = "Element {} has problems with {}".format(node.tag, expr)
+    message = "Element {} has problems with {}: {}".format(node.tag, expr, e)
     error_log.append({'line': node.sourceline, 'message': message})
 
 
-def _pipes(tree, error_log):
+def _pipes(tree, mode, error_log):
     """Return a list of pipes.
 
     """
@@ -133,41 +139,43 @@ def _pipes(tree, error_log):
                 pipe.node2.geom = point
 
             # ABF: inspection date
-            # Occurrence: 1
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: 1 for inspection
 
             expr = 'ABF'
-            inspection_date = datetime.strptime(
-                node.xpath(expr)[0].text.strip(),
-                "%Y-%m-%d"
-            )
-
-            # ABG: inspection time
-            # Occurrence: 0..1
-
-            expr = 'ABG'
             node_set = node.xpath(expr)
 
-            if node_set:
-                inspection_time = datetime.strptime(
-                    node_set[0].text.strip(),
-                    "%H:%M"
-                ).time()
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
 
-                inspection_date = datetime.combine(
-                    inspection_date,
-                    inspection_time
+            if mode == Mode.INSPECTION and len(node_set) < 1:
+                msg = "minOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
+
+            if mode == Mode.INSPECTION and len(node_set) > 1:
+                msg = "maxOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
+
+            if mode == Mode.INSPECTION:
+                pipe.inspection_date = datetime.strptime(
+                    node.xpath(expr)[0].text.strip(),
+                    "%Y-%m-%d"
                 )
 
-            pipe.inspection_date = inspection_date
+            # ABG: inspection time.
+            # Absent in GWSW.Ribx version 1.0?
+            # Occurrence: 0 for pre-inspection?
+            # Occurrence: 0..1 for inspection?
 
         except Exception as e:
             logger.error(e)
-            _log2(node, expr, error_log)
+            _log2(node, expr, e, error_log)
 
     return pipes
 
 
-def _manholes(tree, error_log):
+def _manholes(tree, mode, error_log):
     """Return a list of manholes.
 
     """
@@ -198,42 +206,43 @@ def _manholes(tree, error_log):
                 manhole.geom = point
 
             # CBF: inspection date
-            # Occurrence: 1
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: 1 for inspection
 
             expr = 'CBF'
-            inspection_date = datetime.strptime(
-                node.xpath(expr)[0].text.strip(),
-                "%Y-%m-%d"
-            )
-
-            # CBG: inspection time
-            # Occurrence: 0..1
-
-            expr = 'CBG'
             node_set = node.xpath(expr)
 
-            if node_set:
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
 
-                inspection_time = datetime.strptime(
-                    node_set[0].text.strip(),
-                    "%H:%M"
-                ).time()
+            if mode == Mode.INSPECTION and len(node_set) < 1:
+                msg = "minOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
 
-                inspection_date = datetime.combine(
-                    inspection_date,
-                    inspection_time
+            if mode == Mode.INSPECTION and len(node_set) > 1:
+                msg = "maxOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
+
+            if mode == Mode.INSPECTION:
+                manhole.inspection_date = datetime.strptime(
+                    node.xpath(expr)[0].text.strip(),
+                    "%Y-%m-%d"
                 )
 
-            manhole.inspection_date = inspection_date
+            # CBG: inspection time
+            # Absent in GWSW.Ribx version 1.0?
+            # Occurrence: 0 for pre-inspection?
+            # Occurrence: 0..1 for inspection?
 
         except Exception as e:
             logger.error(e)
-            _log2(node, expr, error_log)
+            _log2(node, expr, e, error_log)
 
     return manholes
 
 
-def _drains(tree, error_log):
+def _drains(tree, mode, error_log):
     """Return a list of drains.
 
     """
@@ -264,33 +273,33 @@ def _drains(tree, error_log):
                 drain.geom = point
 
             # EBF: inspection date
-            # Occurrence: 1
+            # Occurrence: 0 for pre-inspection?
+            # Occurrence: 1 for inspection?
 
             expr = 'EBF'
-            inspection_date = datetime.strptime(
-                node.xpath(expr)[0].text.strip(),
-                "%Y-%m-%d"
-            )
-
-            # EBG: inspection time
-            # Occurrence: 0..1
-
-            expr = 'EBG'
             node_set = node.xpath(expr)
 
-            if node_set:
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
 
-                inspection_time = datetime.strptime(
-                    node_set[0].text.strip(),
-                    "%H:%M"
-                ).time()
+            if mode == Mode.INSPECTION and len(node_set) < 1:
+                msg = "minOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
 
-                inspection_date = datetime.combine(
-                    inspection_date,
-                    inspection_time
+            if mode == Mode.INSPECTION and len(node_set) > 1:
+                msg = "maxOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
+
+            if mode == Mode.INSPECTION:
+                drain.inspection_date = datetime.strptime(
+                    node.xpath(expr)[0].text.strip(),
+                    "%Y-%m-%d"
                 )
 
-            drain.inspection_date = inspection_date
+            # EBG: inspection time
+            # Occurrence: 0 for pre-inspection?
+            # Occurrence: 0..1 for inspection?
 
         except Exception as e:
             logger.error(e)

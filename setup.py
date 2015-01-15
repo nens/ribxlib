@@ -9,12 +9,13 @@ long_description = '\n\n'.join([
     ])
 
 install_requires = [
+    'enum34',
     'setuptools',
     ],
 
 tests_require = [
-    'nose',
     'coverage',
+    'nose',
     ]
 
 setup(name='ribxlib',
