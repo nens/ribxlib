@@ -75,6 +75,7 @@ def _log2(node, expr, e, error_log):
     """
     message = "Element {} has problems with {}: {}".format(node.tag, expr, e)
     error_log.append({'line': node.sourceline, 'message': message})
+    logger.error(message)
 
 
 def _pipes(tree, mode, error_log):
@@ -82,17 +83,27 @@ def _pipes(tree, mode, error_log):
 
     """
     pipes = []
-    nodes = tree.xpath('//AAA/parent::*')
+
+    # In inspection mode, skip all pipes without an inspection date.
+    # ABF must be present for a pipe considered to be inspected!
+
+    if mode == Mode.INSPECTION:
+        expr = '//ABF/parent::*'
+    else:
+        expr = '//AAA/parent::*'
+
+    nodes = tree.xpath(expr)
+
     for node in nodes:
 
         try:
+
             # AAA: pipe reference
             # Occurrence: 1
 
             expr = 'AAA'
             pipe_ref = node.xpath(expr)[0].text.strip()
             pipe = Pipe(pipe_ref)
-            pipes.append(pipe)
 
             # AAD: node1 reference
             # Occurrence: 1
@@ -140,7 +151,7 @@ def _pipes(tree, mode, error_log):
 
             # ABF: inspection date
             # Occurrence: 0 for pre-inspection
-            # Occurrence: 1 for inspection
+            # Occurrence: 0..1 for inspection
 
             expr = 'ABF'
             node_set = node.xpath(expr)
@@ -163,13 +174,11 @@ def _pipes(tree, mode, error_log):
                     "%Y-%m-%d"
                 )
 
-            # ABG: inspection time.
-            # Absent in GWSW.Ribx version 1.0?
-            # Occurrence: 0 for pre-inspection?
-            # Occurrence: 0..1 for inspection?
+            # All well...
+
+            pipes.append(pipe)
 
         except Exception as e:
-            logger.error(e)
             _log2(node, expr, e, error_log)
 
     return pipes
@@ -180,16 +189,26 @@ def _manholes(tree, mode, error_log):
 
     """
     manholes = []
-    nodes = tree.xpath('//CAA/parent::*')
+
+    # In inspection mode, skip all manholes without an inspection date.
+    # CBF must be present for a manhole considered to be inspected!
+
+    if mode == Mode.INSPECTION:
+        expr = '//CBF/parent::*'
+    else:
+        expr = '//CAA/parent::*'
+
+    nodes = tree.xpath(expr)
+
     for node in nodes:
 
         try:
+
             # CAA: manhole reference
 
             expr = 'CAA'
             manhole_ref = node.xpath(expr)[0].text.strip()
             manhole = Manhole(manhole_ref)
-            manholes.append(manhole)
 
             # CAB: manhole coordinates
             # Occurrence: 0..1
@@ -230,13 +249,11 @@ def _manholes(tree, mode, error_log):
                     "%Y-%m-%d"
                 )
 
-            # CBG: inspection time
-            # Absent in GWSW.Ribx version 1.0?
-            # Occurrence: 0 for pre-inspection?
-            # Occurrence: 0..1 for inspection?
+            # All well...
+
+            manholes.append(manhole)
 
         except Exception as e:
-            logger.error(e)
             _log2(node, expr, e, error_log)
 
     return manholes
@@ -247,16 +264,26 @@ def _drains(tree, mode, error_log):
 
     """
     drains = []
+
     nodes = tree.xpath('//EAA/parent::*')
+
+    # In inspection mode, skip all drains without an inspection date.
+    # EBF must be present for a drain considered to be inspected!
+
+    if mode == Mode.INSPECTION:
+        expr = '//EBF/parent::*'
+    else:
+        expr = '//EAA/parent::*'
+
     for node in nodes:
 
         try:
+
             # EAA: drain reference
 
             expr = 'EAA'
             drain_ref = node.xpath(expr)[0].text.strip()
             drain = Drain(drain_ref)
-            drains.append(drain)
 
             # EAB: drain coordinates
             # Occurrence: 0..1
@@ -297,12 +324,11 @@ def _drains(tree, mode, error_log):
                     "%Y-%m-%d"
                 )
 
-            # EBG: inspection time
-            # Occurrence: 0 for pre-inspection?
-            # Occurrence: 0..1 for inspection?
+            # All well...
+
+            drains.append(drain)
 
         except Exception as e:
-            logger.error(e)
-            _log2(node, expr, error_log)
+            _log2(node, expr, e, error_log)
 
     return drains
