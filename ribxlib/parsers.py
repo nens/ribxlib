@@ -105,23 +105,23 @@ def _pipes(tree, mode, error_log):
             pipe_ref = node.xpath(expr)[0].text.strip()
             pipe = Pipe(pipe_ref)
 
-            # AAD: node1 reference
+            # AAD: manhole1 reference
             # Occurrence: 1
 
             expr = 'AAD'
             manhole1_ref = node.xpath(expr)[0].text.strip()
             manhole1 = Manhole(manhole1_ref)
-            pipe.node1 = manhole1
+            pipe.manhole1 = manhole1
 
-            # AAF: node2 reference
+            # AAF: manhole2 reference
             # Occurrence: 1
 
             expr = 'AAF'
             manhole2_ref = node.xpath(expr)[0].text.strip()
             manhole2 = Manhole(manhole2_ref)
-            pipe.node2 = manhole2
+            pipe.manhole2 = manhole2
 
-            # AAE: node1 coordinates
+            # AAE: manhole1 coordinates
             # Occurrence: 0..1
             # gml:coordinates is deprecated in favour of gml:pos
             # gml:Point is correct!
@@ -133,9 +133,9 @@ def _pipes(tree, mode, error_log):
                 coordinates = map(float, node_set[0].text.split())
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(*coordinates)
-                pipe.node1.geom = point
+                pipe.manhole1.geom = point
 
-            # AAG: node2 coordinates
+            # AAG: manhole2 coordinates
             # Occurrence: 0..1
             # gml:coordinates is deprecated in favour of gml:pos
             # gml:Point is correct!
@@ -147,11 +147,11 @@ def _pipes(tree, mode, error_log):
                 coordinates = map(float, node_set[0].text.split())
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(*coordinates)
-                pipe.node2.geom = point
+                pipe.manhole2.geom = point
 
             # ABF: inspection date
             # Occurrence: 0 for pre-inspection
-            # Occurrence: 0..1 for inspection
+            # Occurrence: 1 for inspection
 
             expr = 'ABF'
             node_set = node.xpath(expr)
@@ -173,6 +173,25 @@ def _pipes(tree, mode, error_log):
                     node.xpath(expr)[0].text.strip(),
                     "%Y-%m-%d"
                 )
+
+            # ABS: file name of video
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: 0..1 for inspection
+
+            expr = 'ABS'
+            node_set = node.xpath(expr)
+
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
+
+            if mode == Mode.INSPECTION and len(node_set) > 1:
+                msg = "maxOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
+
+            if node_set:
+                video = node_set[0].text.strip()
+                pipe.media.append(video)
 
             # All well...
 
@@ -248,6 +267,25 @@ def _manholes(tree, mode, error_log):
                     node.xpath(expr)[0].text.strip(),
                     "%Y-%m-%d"
                 )
+
+            # CBS: file name of video
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: 0..1 for inspection
+
+            expr = 'CBS'
+            node_set = node.xpath(expr)
+
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
+
+            if mode == Mode.INSPECTION and len(node_set) > 1:
+                msg = "maxOccurs = 1 in {}".format(mode)
+                raise Exception(msg)
+
+            if node_set:
+                video = node_set[0].text.strip()
+                manhole.media.append(video)
 
             # All well...
 

@@ -20,6 +20,17 @@ class Ribx(object):
         self.manholes = []
         self.drains = []
 
+    @property
+    def media(self):
+        media = []
+        for pipe in self.pipes:
+            media.extend(pipe.media)
+            media.extend(pipe.manhole1.media)
+            media.extend(pipe.manhole2.media)
+        for manhole in self.manholes:
+            media.extend(manhole.media)
+        return media
+
 
 class Pipe(object):
     """Sewerage pipe (`rioolbuis` in Dutch).
@@ -27,8 +38,8 @@ class Pipe(object):
     """
     def __init__(self, ref):
         self.ref = ref
-        self.node1 = None  # Is a manhole?
-        self.node2 = None  # Is a manhole?
+        self.manhole1 = None
+        self.manhole2 = None
         self.inspection_date = None
         self.media = []
 
@@ -39,8 +50,8 @@ class Pipe(object):
     def geom(self):
         try:
             line = ogr.Geometry(ogr.wkbLineString)
-            line.AddPoint(*self.node1.geom.GetPoint())
-            line.AddPoint(*self.node2.geom.GetPoint())
+            line.AddPoint(*self.manhole1.geom.GetPoint())
+            line.AddPoint(*self.manhole2.geom.GetPoint())
             return line
         except Exception as e:
             logger.error(e)
@@ -54,6 +65,7 @@ class Manhole(object):
         self.ref = ref
         self.geom = None
         self.inspection_date = None
+        self.media = []
 
     def __str__(self):
         return self.ref
