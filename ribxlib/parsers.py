@@ -20,8 +20,9 @@ from ribxlib.models import Ribx
 
 logger = logging.getLogger(__name__)
 
-NAMESPACES = {
+NS = {
     "gml": "http://www.opengis.net/gml",
+    "nl": "http://www.w3.org/2001/XMLSchema-instance",
 }
 
 
@@ -88,11 +89,11 @@ def _pipes(tree, mode, error_log):
     # ABF must be present for a pipe considered to be inspected!
 
     if mode == Mode.INSPECTION:
-        expr = '//ABF/parent::*'
+        expr = '//ABF/parent::*|//nl:GBF/parent::*'
     else:
-        expr = '//AAA/parent::*'
+        expr = '//AAA/parent::*|//nl:GAA/parent::*'
 
-    nodes = tree.xpath(expr)
+    nodes = tree.xpath(expr, namespaces=NS)
 
     for node in nodes:
 
@@ -101,23 +102,23 @@ def _pipes(tree, mode, error_log):
             # AAA: pipe reference
             # Occurrence: 1
 
-            expr = 'AAA'
-            pipe_ref = node.xpath(expr)[0].text.strip()
+            expr = 'AAA|nl:GAA'
+            pipe_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
             pipe = Pipe(pipe_ref)
 
             # AAD: manhole1 reference
             # Occurrence: 1
 
-            expr = 'AAD'
-            manhole1_ref = node.xpath(expr)[0].text.strip()
+            expr = 'AAD|nl:GAD'
+            manhole1_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
             manhole1 = Manhole(manhole1_ref)
             pipe.manhole1 = manhole1
 
             # AAF: manhole2 reference
             # Occurrence: 1
 
-            expr = 'AAF'
-            manhole2_ref = node.xpath(expr)[0].text.strip()
+            expr = 'AAF|nl:GAF'
+            manhole2_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
             manhole2 = Manhole(manhole2_ref)
             pipe.manhole2 = manhole2
 
@@ -126,8 +127,8 @@ def _pipes(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # gml:Point is correct!
 
-            expr = 'AAE/gml:point/gml:pos'
-            node_set = node.xpath(expr, namespaces=NAMESPACES)
+            expr = 'AAE/gml:point/gml:pos|nl:GAE/gml:point/gml:pos'
+            node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
                 coordinates = map(float, node_set[0].text.split())
@@ -140,8 +141,8 @@ def _pipes(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # gml:Point is correct!
 
-            expr = 'AAG/gml:point/gml:pos'
-            node_set = node.xpath(expr, namespaces=NAMESPACES)
+            expr = 'AAG/gml:point/gml:pos|nl:GAG/gml:point/gml:pos'
+            node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
                 coordinates = map(float, node_set[0].text.split())
@@ -153,8 +154,8 @@ def _pipes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 1 for inspection
 
-            expr = 'ABF'
-            node_set = node.xpath(expr)
+            expr = 'ABF|nl:GBF'
+            node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
                 msg = "maxOccurs = 0 in {}".format(mode)
@@ -170,7 +171,7 @@ def _pipes(tree, mode, error_log):
 
             if mode == Mode.INSPECTION:
                 pipe.inspection_date = datetime.strptime(
-                    node.xpath(expr)[0].text.strip(),
+                    node_set[0].text.strip(),
                     "%Y-%m-%d"
                 )
 
@@ -178,8 +179,8 @@ def _pipes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 0..1 for inspection
 
-            expr = 'ABS'
-            node_set = node.xpath(expr)
+            expr = 'ABS|nl:GBS'
+            node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
                 msg = "maxOccurs = 0 in {}".format(mode)
@@ -213,11 +214,11 @@ def _manholes(tree, mode, error_log):
     # CBF must be present for a manhole considered to be inspected!
 
     if mode == Mode.INSPECTION:
-        expr = '//CBF/parent::*'
+        expr = '//CBF/parent::*|//JBF/parent::*'
     else:
-        expr = '//CAA/parent::*'
+        expr = '//CAA/parent::*|//JAA/parent::*'
 
-    nodes = tree.xpath(expr)
+    nodes = tree.xpath(expr, namespaces=NS)
 
     for node in nodes:
 
@@ -225,8 +226,8 @@ def _manholes(tree, mode, error_log):
 
             # CAA: manhole reference
 
-            expr = 'CAA'
-            manhole_ref = node.xpath(expr)[0].text.strip()
+            expr = 'CAA|nl:JAA'
+            manhole_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
             manhole = Manhole(manhole_ref)
 
             # CAB: manhole coordinates
@@ -234,8 +235,8 @@ def _manholes(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # gml:Point is correct!
 
-            expr = 'CAB/gml:point/gml:pos'
-            node_set = node.xpath(expr, namespaces=NAMESPACES)
+            expr = 'CAB/gml:point/gml:pos|nl:JAB/gml:point/gml:pos'
+            node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
                 coordinates = map(float, node_set[0].text.split())
@@ -247,8 +248,8 @@ def _manholes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 1 for inspection
 
-            expr = 'CBF'
-            node_set = node.xpath(expr)
+            expr = 'CBF|nl:JBF'
+            node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
                 msg = "maxOccurs = 0 in {}".format(mode)
@@ -264,7 +265,7 @@ def _manholes(tree, mode, error_log):
 
             if mode == Mode.INSPECTION:
                 manhole.inspection_date = datetime.strptime(
-                    node.xpath(expr)[0].text.strip(),
+                    node_set[0].text.strip(),
                     "%Y-%m-%d"
                 )
 
@@ -272,8 +273,8 @@ def _manholes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 0..1 for inspection
 
-            expr = 'CBS'
-            node_set = node.xpath(expr)
+            expr = 'CBS|nl:JBS'
+            node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
                 msg = "maxOccurs = 0 in {}".format(mode)
@@ -303,7 +304,7 @@ def _drains(tree, mode, error_log):
     """
     drains = []
 
-    nodes = tree.xpath('//EAA/parent::*')
+    nodes = tree.xpath('//EAA/parent::*', namespaces=NS)
 
     # In inspection mode, skip all drains without an inspection date.
     # EBF must be present for a drain considered to be inspected!
@@ -320,7 +321,7 @@ def _drains(tree, mode, error_log):
             # EAA: drain reference
 
             expr = 'EAA'
-            drain_ref = node.xpath(expr)[0].text.strip()
+            drain_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
             drain = Drain(drain_ref)
 
             # EAB: drain coordinates
@@ -329,7 +330,7 @@ def _drains(tree, mode, error_log):
             # gml:Point is correct!
 
             expr = 'EAB/gml:point/gml:pos'
-            node_set = node.xpath(expr, namespaces=NAMESPACES)
+            node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
                 coordinates = map(float, node_set[0].text.split())
@@ -342,7 +343,7 @@ def _drains(tree, mode, error_log):
             # Occurrence: 1 for inspection?
 
             expr = 'EBF'
-            node_set = node.xpath(expr)
+            node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
                 msg = "maxOccurs = 0 in {}".format(mode)
@@ -358,7 +359,7 @@ def _drains(tree, mode, error_log):
 
             if mode == Mode.INSPECTION:
                 drain.inspection_date = datetime.strptime(
-                    node.xpath(expr)[0].text.strip(),
+                    node_set[0].text.strip(),
                     "%Y-%m-%d"
                 )
 
