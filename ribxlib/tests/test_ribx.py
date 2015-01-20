@@ -12,14 +12,20 @@ class RibxTest(unittest.TestCase):
     def test_case_1(self):
         mode = Mode.INSPECTION
         f = os.path.join(DATA_DIR, "237_0-2013-D.ribx")
-        parse(f, mode)
+        ribx, log = parse(f, mode)
+        ##self.assertFalse(log)
+        self.assertFalse(len(log))
 
     def test_case_2(self):
         mode = Mode.INSPECTION
         f = os.path.join(DATA_DIR, "237_0-2013-R.ribx")
-        parse(f, mode)
+        ribx, log = parse(f, mode)
+        ##self.assertFalse(log)
+        self.assertFalse(len(log))
 
     def test_case_3(self):
         mode = Mode.INSPECTION
         f = os.path.join(DATA_DIR, "demobestand.ribxA")
-        parse(f, mode)
+        ribx, log = parse(f, mode)
+        ##self.assertFalse(log)
+        self.assertFalse(len(log))
