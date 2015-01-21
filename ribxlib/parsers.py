@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 NS = {
     "gml": "http://www.opengis.net/gml",
-    "nl": "http://www.w3.org/2001/XMLSchema-instance",
+    "nl": "http://www.w3.org/2001/XMLSchema-instance",  # so wrong :-(
 }
 
 
