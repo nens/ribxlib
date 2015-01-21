@@ -211,6 +211,28 @@ def _pipes(tree, mode, error_log):
                 video = node_set[0].text.strip()
                 pipe.media.append(video)
 
+            # ZC: observation
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: * for inspection
+
+            expr = 'ZC'
+            node_set = node.xpath(expr, namespaces=NS)
+
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
+
+            # M: file name of photo
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: * for inspection
+
+            expr = 'ZC/M'
+            node_set = node.xpath(expr, namespaces=NS)
+
+            for item in node_set:
+                photo = item.text.strip()
+                pipe.media.append(photo)
+
             # All well...
 
             pipes.append(pipe)
@@ -305,6 +327,28 @@ def _manholes(tree, mode, error_log):
                 video = node_set[0].text.strip()
                 manhole.media.append(video)
 
+            # ZC: observation
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: * for inspection
+
+            expr = 'ZC'
+            node_set = node.xpath(expr, namespaces=NS)
+
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
+
+            # M: file name of photo
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: * for inspection
+
+            expr = 'ZC/M'
+            node_set = node.xpath(expr, namespaces=NS)
+
+            for item in node_set:
+                photo = item.text.strip()
+                manhole.media.append(photo)
+
             # All well...
 
             manholes.append(manhole)
@@ -379,6 +423,28 @@ def _drains(tree, mode, error_log):
                     node_set[0].text.strip(),
                     "%Y-%m-%d"
                 )
+
+            # ZC: observation
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: * for inspection
+
+            expr = 'ZC'
+            node_set = node.xpath(expr, namespaces=NS)
+
+            if mode == Mode.PREINSPECTION and len(node_set) != 0:
+                msg = "maxOccurs = 0 in {}".format(mode)
+                raise Exception(msg)
+
+            # M: file name of photo
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: * for inspection
+
+            expr = 'ZC/M'
+            node_set = node.xpath(expr, namespaces=NS)
+
+            for item in node_set:
+                photo = item.text.strip()
+                drain.media.append(photo)
 
             # All well...
 
