@@ -142,9 +142,12 @@ def _pipes(tree, mode, error_log):
             # AAE: manhole1 coordinates
             # Occurrence: 0..1
             # gml:coordinates is deprecated in favour of gml:pos
-            # gml:Point is correct!
+            # The spec uses gml:point? gml:Point is correct!
 
-            expr = 'AAE/gml:point/gml:pos|nl:GAE/gml:point/gml:pos'
+            expr = (
+                'AAE/gml:point/gml:pos|nl:GAE/gml:point/gml:pos|'
+                'AAE/gml:Point/gml:pos|nl:GAE/gml:Point/gml:pos'
+            )
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
@@ -156,9 +159,12 @@ def _pipes(tree, mode, error_log):
             # AAG: manhole2 coordinates
             # Occurrence: 0..1
             # gml:coordinates is deprecated in favour of gml:pos
-            # gml:Point is correct!
+            # The spec uses gml:point? gml:Point is correct!
 
-            expr = 'AAG/gml:point/gml:pos|nl:GAG/gml:point/gml:pos'
+            expr = (
+                'AAG/gml:point/gml:pos|nl:GAG/gml:point/gml:pos|'
+                'AAG/gml:Point/gml:pos|nl:GAG/gml:Point/gml:pos'
+            )
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
@@ -272,9 +278,12 @@ def _manholes(tree, mode, error_log):
             # CAB: manhole coordinates
             # Occurrence: 0..1
             # gml:coordinates is deprecated in favour of gml:pos
-            # gml:Point is correct!
+            # The spec uses gml:point? gml:Point is correct!
 
-            expr = 'CAB/gml:point/gml:pos|nl:JAB/gml:point/gml:pos'
+            expr = (
+                'CAB/gml:point/gml:pos|nl:JAB/gml:point/gml:pos|'
+                'CAB/gml:Point/gml:pos|nl:JAB/gml:Point/gml:pos'
+            )
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
@@ -388,9 +397,9 @@ def _drains(tree, mode, error_log):
             # EAB: drain coordinates
             # Occurrence: 0..1
             # gml:coordinates is deprecated in favour of gml:pos
-            # gml:Point is correct!
+            # The spec uses gml:point? gml:Point is correct!
 
-            expr = 'EAB/gml:point/gml:pos'
+            expr = 'EAB/gml:point/gml:pos|EAB/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
