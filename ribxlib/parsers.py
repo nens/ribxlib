@@ -20,6 +20,8 @@ from ribxlib.models import Ribx
 
 logger = logging.getLogger(__name__)
 
+# NAMESPACES
+
 NS = {
     "gml": "http://www.opengis.net/gml",
     "nl": "http://www.w3.org/2001/XMLSchema-instance",  # so wrong :-(
@@ -27,12 +29,27 @@ NS = {
 
 
 class Mode(Enum):
-    PREINSPECTION = 1
-    INSPECTION = 2
+    PREINSPECTION = 1  # Ordering party -> contractor.
+    INSPECTION = 2  # Contractor -> ordering party.
 
 
 def parse(f, mode):
     """Parse a GWSW.Ribx / GWSW.Ribx-A document.
+
+    GWSW.Ribx and GWSW.Ribx-A are immature standards. Their current versions
+    have arguable deficiencies: a wrong use of namespaces, gml:point, etc.
+    In absence of useful schema's, no attempt is made here to validate
+    documents. Only information that is needed for uploadserver-site,
+    is extracted and checked.
+
+    Args:
+      f (string): Full path to the file to be parsed.
+      mode (Enum): See ribx.parsers.Mode.
+
+    Returns:
+      A (ribx, log) tuple. The ribxlib.models.Ribx instance carries
+      the pipes, manholes and drains (to be) inspected/cleaned.
+      Log is a list that contains all parsing errors.
 
     """
     parser = etree.XMLParser()
