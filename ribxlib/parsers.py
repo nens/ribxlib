@@ -120,23 +120,29 @@ def _pipes(tree, mode, error_log):
             # Occurrence: 1
 
             expr = 'AAA|nl:GAA'
-            pipe_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
+            item = node.xpath(expr, namespaces=NS)[0]
+            pipe_ref = item.text.strip()
             pipe = Pipe(pipe_ref)
+            pipe.sourceline = item.sourceline
 
             # AAD: manhole1 reference
             # Occurrence: 1
 
             expr = 'AAD|nl:GAD'
-            manhole1_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
+            item = node.xpath(expr, namespaces=NS)[0]
+            manhole1_ref = item.text.strip()
             manhole1 = Manhole(manhole1_ref)
+            manhole1.sourceline = item.sourceline
             pipe.manhole1 = manhole1
 
             # AAF: manhole2 reference
             # Occurrence: 1
 
             expr = 'AAF|nl:GAF'
-            manhole2_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
+            item = node.xpath(expr, namespaces=NS)[0]
+            manhole2_ref = item.text.strip()
             manhole2 = Manhole(manhole2_ref)
+            manhole2.sourceline = item.sourceline
             pipe.manhole2 = manhole2
 
             # AAE: manhole1 coordinates
@@ -272,8 +278,10 @@ def _manholes(tree, mode, error_log):
             # CAA: manhole reference
 
             expr = 'CAA|nl:JAA'
-            manhole_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
+            item = node.xpath(expr, namespaces=NS)[0]
+            manhole_ref = item.text.strip()
             manhole = Manhole(manhole_ref)
+            manhole.sourceline = item.sourceline
 
             # CAB: manhole coordinates
             # Occurrence: 0..1
@@ -391,8 +399,10 @@ def _drains(tree, mode, error_log):
             # EAA: drain reference
 
             expr = 'EAA'
-            drain_ref = node.xpath(expr, namespaces=NS)[0].text.strip()
+            item = node.xpath(expr, namespaces=NS)[0]
+            drain_ref = item.text.strip()
             drain = Drain(drain_ref)
+            drain.sourceline = item.sourceline
 
             # EAB: drain coordinates
             # Occurrence: 0..1

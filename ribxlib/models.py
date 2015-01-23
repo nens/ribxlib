@@ -42,6 +42,7 @@ class Pipe(object):
         self.manhole2 = None
         self.inspection_date = None
         self.media = []
+        self.sourceline = None
 
     def __str__(self):
         return self.ref
@@ -66,6 +67,7 @@ class Manhole(object):
         self.geom = None
         self.inspection_date = None
         self.media = []
+        self.sourceline = None
 
     def __str__(self):
         return self.ref
@@ -79,6 +81,7 @@ class Drain(object):
         self.ref = ref
         self.geom = None
         self.inspection_date = None
+        self.sourceline = None
 
     def __str__(self):
         return self.ref
