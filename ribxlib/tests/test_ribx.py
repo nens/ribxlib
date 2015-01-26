@@ -32,6 +32,12 @@ class RibxTest(unittest.TestCase):
         self.assertFalse(len(log))
 
     def test_case_4(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
         self.assertRaises(
             Exception,
             _check_filename,
@@ -39,6 +45,12 @@ class RibxTest(unittest.TestCase):
         )
 
     def test_case_5(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
         self.assertRaises(
             Exception,
             _check_filename,
@@ -46,6 +58,12 @@ class RibxTest(unittest.TestCase):
         )
 
     def test_case_6(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
         self.assertRaises(
             Exception,
             _check_filename,
@@ -53,6 +71,12 @@ class RibxTest(unittest.TestCase):
         )
 
     def test_case_7(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
         self.assertRaises(
             Exception,
             _check_filename,
@@ -60,6 +84,12 @@ class RibxTest(unittest.TestCase):
         )
 
     def test_case_8(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
         self.assertRaises(
             Exception,
             _check_filename,

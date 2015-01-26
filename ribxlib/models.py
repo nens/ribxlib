@@ -83,6 +83,7 @@ class Drain(object):
         self.ref = ref
         self.geom = None
         self.inspection_date = None
+        self.media = set()
         self.sourceline = None
 
     def __str__(self):
