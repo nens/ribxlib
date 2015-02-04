@@ -265,9 +265,9 @@ def _manholes(tree, mode, error_log):
     # CBF must be present for a manhole considered to be inspected!
 
     if mode == Mode.INSPECTION:
-        expr = '//CBF/parent::*|//JBF/parent::*'
+        expr = '//CBF/parent::*|//nl:JBF/parent::*'
     else:
-        expr = '//CAA/parent::*|//JAA/parent::*'
+        expr = '//CAA/parent::*|//nl:JAA/parent::*'
 
     nodes = tree.xpath(expr, namespaces=NS)
 
@@ -382,15 +382,15 @@ def _drains(tree, mode, error_log):
     """
     drains = []
 
-    nodes = tree.xpath('//EAA/parent::*', namespaces=NS)
+    nodes = tree.xpath('//nl:EAA/parent::*', namespaces=NS)
 
     # In inspection mode, skip all drains without an inspection date.
     # EBF must be present for a drain considered to be inspected!
 
     if mode == Mode.INSPECTION:
-        expr = '//EBF/parent::*'
+        expr = '//nl:EBF/parent::*'
     else:
-        expr = '//EAA/parent::*'
+        expr = '//nl:EAA/parent::*'
 
     for node in nodes:
 
@@ -398,7 +398,7 @@ def _drains(tree, mode, error_log):
 
             # EAA: drain reference
 
-            expr = 'EAA'
+            expr = 'nl:EAA'
             item = node.xpath(expr, namespaces=NS)[0]
             drain_ref = item.text.strip()
             drain = Drain(drain_ref)
@@ -409,7 +409,7 @@ def _drains(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # The spec uses gml:point? gml:Point is correct!
 
-            expr = 'EAB/gml:point/gml:pos|EAB/gml:Point/gml:pos'
+            expr = 'nl:EAB/gml:point/gml:pos|nl:EAB/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
@@ -422,7 +422,7 @@ def _drains(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection?
             # Occurrence: 1 for inspection?
 
-            expr = 'EBF'
+            expr = 'nl:EBF'
             node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
