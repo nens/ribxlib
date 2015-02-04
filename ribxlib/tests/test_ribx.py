@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from ribxlib.parsers import _check_filename
 from ribxlib.parsers import Mode
 from ribxlib.parsers import parse
 
@@ -29,3 +30,68 @@ class RibxTest(unittest.TestCase):
         ribx, log = parse(f, mode)
         ##self.assertFalse(log)
         self.assertFalse(len(log))
+
+    def test_case_4(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
+        self.assertRaises(
+            Exception,
+            _check_filename,
+            "C:\user\docs\Letter.txt"
+        )
+
+    def test_case_5(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
+        self.assertRaises(
+            Exception,
+            _check_filename,
+            "\\Server01\user\docs\Letter.txt"
+        )
+
+    def test_case_6(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
+        self.assertRaises(
+            Exception,
+            _check_filename,
+            "/home/user/docs/Letter.txt"
+        )
+
+    def test_case_7(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
+        self.assertRaises(
+            Exception,
+            _check_filename,
+            "Letter"
+        )
+
+    def test_case_8(self):
+        """Check filename.
+
+        Folder name must be excluded.
+        Extension must be present.
+
+        """
+        self.assertRaises(
+            Exception,
+            _check_filename,
+            ".txt"
+        )

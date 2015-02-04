@@ -22,13 +22,15 @@ class Ribx(object):
 
     @property
     def media(self):
-        media = []
+        media = set()
         for pipe in self.pipes:
-            media.extend(pipe.media)
-            media.extend(pipe.manhole1.media)
-            media.extend(pipe.manhole2.media)
+            media.update(pipe.media)
+            media.update(pipe.manhole1.media)
+            media.update(pipe.manhole2.media)
         for manhole in self.manholes:
-            media.extend(manhole.media)
+            media.update(manhole.media)
+        for drain in self.drains:
+            media.update(drain.media)
         return media
 
 
@@ -41,7 +43,7 @@ class Pipe(object):
         self.manhole1 = None
         self.manhole2 = None
         self.inspection_date = None
-        self.media = []
+        self.media = set()
         self.sourceline = None
 
     def __str__(self):
@@ -66,7 +68,7 @@ class Manhole(object):
         self.ref = ref
         self.geom = None
         self.inspection_date = None
-        self.media = []
+        self.media = set()
         self.sourceline = None
 
     def __str__(self):
@@ -81,6 +83,7 @@ class Drain(object):
         self.ref = ref
         self.geom = None
         self.inspection_date = None
+        self.media = set()
         self.sourceline = None
 
     def __str__(self):

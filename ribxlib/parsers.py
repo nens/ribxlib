@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 import logging
+import ntpath
+import os
 
 from enum import Enum
 from lxml import etree
@@ -94,6 +96,24 @@ def _log2(node, expr, e, error_log):
     message = "Element {} has problems with {}: {}".format(node.tag, expr, e)
     error_log.append({'line': node.sourceline, 'message': message})
     logger.error(message)
+
+
+def _check_filename(path):
+    """Check file name.
+
+    Folder name must be excluded.
+    Extension must be present.
+
+    """
+    head, tail = ntpath.split(path)
+    if head:
+        msg = "folder name must be excluded: {}".format(path)
+        raise Exception(msg)
+
+    root, ext = os.path.splitext(tail)
+    if ext in ['', '.']:
+        msg = "file extension is missing: {}".format(tail)
+        raise Exception(msg)
 
 
 def _pipes(tree, mode, error_log):
@@ -221,7 +241,8 @@ def _pipes(tree, mode, error_log):
 
             if node_set:
                 video = node_set[0].text.strip()
-                pipe.media.append(video)
+                _check_filename(video)
+                pipe.media.add(video)
 
             # ZC: observation
             # Occurrence: 0 for pre-inspection
@@ -234,6 +255,18 @@ def _pipes(tree, mode, error_log):
                 msg = "maxOccurs = 0 in {}".format(mode)
                 raise Exception(msg)
 
+            # N: file name of video
+            # Occurrence: 0 for pre-inspection
+            # Occurrence: * for inspection
+
+            expr = 'ZC/N'
+            node_set = node.xpath(expr, namespaces=NS)
+
+            for item in node_set:
+                video = item.text.split('|')[0].strip()
+                _check_filename(video)
+                pipe.media.add(video)
+
             # M: file name of photo
             # Occurrence: 0 for pre-inspection
             # Occurrence: * for inspection
@@ -243,7 +276,8 @@ def _pipes(tree, mode, error_log):
 
             for item in node_set:
                 photo = item.text.strip()
-                pipe.media.append(photo)
+                _check_filename(photo)
+                pipe.media.add(photo)
 
             # All well...
 
@@ -342,7 +376,8 @@ def _manholes(tree, mode, error_log):
 
             if node_set:
                 video = node_set[0].text.strip()
-                manhole.media.append(video)
+                _check_filename(video)
+                manhole.media.add(video)
 
             # ZC: observation
             # Occurrence: 0 for pre-inspection
@@ -364,7 +399,8 @@ def _manholes(tree, mode, error_log):
 
             for item in node_set:
                 photo = item.text.strip()
-                manhole.media.append(photo)
+                _check_filename(photo)
+                manhole.media.add(photo)
 
             # All well...
 
@@ -463,7 +499,8 @@ def _drains(tree, mode, error_log):
 
             for item in node_set:
                 photo = item.text.strip()
-                drain.media.append(photo)
+                _check_filename(photo)
+                drain.media.add(photo)
 
             # All well...
 
