@@ -170,10 +170,7 @@ def _pipes(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # The spec uses gml:point? gml:Point is correct!
 
-            expr = (
-                'AAE/gml:point/gml:pos|nl:GAE/gml:point/gml:pos|'
-                'AAE/gml:Point/gml:pos|nl:GAE/gml:Point/gml:pos'
-            )
+            expr = 'AAE/gml:Point/gml:pos|nl:GAE/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
@@ -187,10 +184,7 @@ def _pipes(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # The spec uses gml:point? gml:Point is correct!
 
-            expr = (
-                'AAG/gml:point/gml:pos|nl:GAG/gml:point/gml:pos|'
-                'AAG/gml:Point/gml:pos|nl:GAG/gml:Point/gml:pos'
-            )
+            expr = 'AAG/gml:Point/gml:pos|nl:GAG/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
@@ -322,10 +316,7 @@ def _manholes(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # The spec uses gml:point? gml:Point is correct!
 
-            expr = (
-                'CAB/gml:point/gml:pos|nl:JAB/gml:point/gml:pos|'
-                'CAB/gml:Point/gml:pos|nl:JAB/gml:Point/gml:pos'
-            )
+            expr = 'CAB/gml:Point/gml:pos|nl:JAB/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
@@ -440,7 +431,7 @@ def _drains(tree, mode, error_log):
             # gml:coordinates is deprecated in favour of gml:pos
             # The spec uses gml:point? gml:Point is correct!
 
-            expr = 'nl:EAB/gml:point/gml:pos|nl:EAB/gml:Point/gml:pos'
+            expr = 'nl:EAB/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
