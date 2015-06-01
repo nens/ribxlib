@@ -423,11 +423,6 @@ def _drains(tree, mode, error_log):
     # In inspection mode, skip all drains without an inspection date.
     # EBF must be present for a drain considered to be inspected!
 
-    if mode == Mode.INSPECTION:
-        expr = '//nl:EBF/parent::*'
-    else:
-        expr = '//nl:EAA/parent::*'
-
     for node in nodes:
 
         try:
