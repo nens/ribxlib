@@ -29,6 +29,10 @@ NS = {
 }
 
 
+class ParseException(Exception):
+    pass
+
+
 class Mode(Enum):
     PREINSPECTION = 1  # Ordering party -> contractor.
     INSPECTION = 2  # Contractor -> ordering party.
@@ -129,30 +133,39 @@ def _pipes(tree, mode, error_log):
 
         try:
 
-            # AAA: pipe reference
+            # AAA (inspection) or GAA (cleaning): pipe reference
             # Occurrence: 1
 
-            expr = 'AAA'
-            item = node.xpath(expr, namespaces=NS)[0]
+            expr = 'AAA|GAA'
+            item = node.xpath(expr, namespaces=NS)
+            if not item:
+                raise ParseException("Expected AAA or GAA in pipe record")
+            item = item[0]
             pipe_ref = item.text.strip()
             pipe = Pipe(pipe_ref)
             pipe.sourceline = item.sourceline
 
-            # AAD: manhole1 reference
+            # AAD (inspection) or GAD (cleaning) : manhole1 reference
             # Occurrence: 1
 
-            expr = 'AAD'
-            item = node.xpath(expr, namespaces=NS)[0]
+            expr = 'AAD|GAD'
+            item = node.xpath(expr, namespaces=NS)
+            if not item:
+                raise ParseException("Expected AAD or GAD in pipe record")
+            item = item[0]
             manhole1_ref = item.text.strip()
             manhole1 = Manhole(manhole1_ref)
             manhole1.sourceline = item.sourceline
             pipe.manhole1 = manhole1
 
-            # AAF: manhole2 reference
+            # AAF (inspection) or GAF (cleaning): manhole2 reference
             # Occurrence: 1
 
-            expr = 'AAF'
-            item = node.xpath(expr, namespaces=NS)[0]
+            expr = 'AAF|GAF'
+            item = node.xpath(expr, namespaces=NS)
+            if not item:
+                raise ParseException("Expected AAF or GAF in pipe record")
+            item = item[0]
             manhole2_ref = item.text.strip()
             manhole2 = Manhole(manhole2_ref)
             manhole2.sourceline = item.sourceline
@@ -165,6 +178,9 @@ def _pipes(tree, mode, error_log):
 
             expr = 'AAE/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
+            if not node_set:
+                expr = 'GAE/gml:Point/gml:pos'
+                node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
                 coordinates = map(float, node_set[0].text.split())
@@ -177,6 +193,9 @@ def _pipes(tree, mode, error_log):
 
             expr = 'AAG/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
+            if not node_set:
+                expr = 'GAG/gml:Point/gml:pos'
+                node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
                 coordinates = map(float, node_set[0].text.split())
@@ -188,7 +207,7 @@ def _pipes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 1 for inspection
 
-            expr = 'ABF'
+            expr = 'ABF|GBF'
             node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
@@ -213,7 +232,7 @@ def _pipes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 0..1 for inspection
 
-            expr = 'ABS'
+            expr = 'ABS|GBS'
             node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
@@ -292,7 +311,7 @@ def _manholes(tree, mode, error_log):
 
             # CAA: manhole reference
 
-            expr = 'CAA'
+            expr = 'CAA|JAA'
             item = node.xpath(expr, namespaces=NS)[0]
             manhole_ref = item.text.strip()
             manhole = Manhole(manhole_ref)
@@ -305,6 +324,9 @@ def _manholes(tree, mode, error_log):
 
             expr = 'CAB/gml:Point/gml:pos'
             node_set = node.xpath(expr, namespaces=NS)
+            if not node_set:
+                expr = 'JAB/gml:Point/gml:pos'
+                node_set = node.xpath(expr, namespaces=NS)
 
             if node_set:
                 coordinates = map(float, node_set[0].text.split())
@@ -316,7 +338,7 @@ def _manholes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 1 for inspection
 
-            expr = 'CBF'
+            expr = 'CBF|JBF'
             node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
@@ -341,7 +363,7 @@ def _manholes(tree, mode, error_log):
             # Occurrence: 0 for pre-inspection
             # Occurrence: 0..1 for inspection
 
-            expr = 'CBS'
+            expr = 'CBS|JBS'
             node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
