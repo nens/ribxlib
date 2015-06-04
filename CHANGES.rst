@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.2 (unreleased)
+0.2 (2015-06-04)
 ----------------
 
 - Incorporated changes for the RIBX standard 1.2 (released 27 may 2015).
