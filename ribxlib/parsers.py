@@ -449,6 +449,11 @@ def _drains(tree, mode, error_log):
                 point.AddPoint(*coordinates)
                 drain.geom = point
 
+            # EAQ: Ownership
+            node_set = node.xpath('EAQ')
+            if node_set and node_set[0].text:
+                drain.owner = node_set[0].text.strip()
+
             # EBF: inspection date
             # Occurrence: 0 for pre-inspection?
             # Occurrence: 1 for inspection?

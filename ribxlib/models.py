@@ -85,6 +85,7 @@ class Drain(object):
         self.inspection_date = None
         self.media = set()
         self.sourceline = None
+        self.owner = ''
 
     def __str__(self):
         return self.ref

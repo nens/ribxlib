@@ -5,7 +5,8 @@ Changelog of ribxlib
 0.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Store the value of the <EAQ> field of drains in the Drain object;
+  used to signify who owns a given drain.
 
 
 0.2 (2015-06-04)
