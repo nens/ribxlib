@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.3 (unreleased)
+0.3 (2015-06-09)
 ----------------
 
 - Store the value of the <EAQ> field of drains in the Drain object;
