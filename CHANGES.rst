@@ -8,6 +8,10 @@ Changelog of ribxlib
 - Store the value of the <EAQ> field of drains in the Drain object;
   used to signify who owns a given drain.
 
+- It was only possible to use <N> records in observations for pipes,
+  but they are used for manholes too. According to the standard, <ZC>
+  records are always the same. Gave them their own object.
+
 
 0.2 (2015-06-04)
 ----------------

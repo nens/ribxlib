@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from ribxlib.parsers import _check_filename
+from ribxlib.models import _check_filename
 from ribxlib.parsers import Mode
 from ribxlib.parsers import parse
 

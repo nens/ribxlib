@@ -7,10 +7,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import ntpath
+import os
 
 from osgeo import ogr
 
 logger = logging.getLogger(__name__)
+
+
+class ParseException(Exception):
+    pass
 
 
 class Ribx(object):
@@ -89,3 +95,42 @@ class Drain(object):
 
     def __str__(self):
         return self.ref
+
+
+def _check_filename(path):
+    """Check file name.
+
+    Folder name must be excluded.
+    Extension must be present.
+
+    """
+    head, tail = ntpath.split(path)
+    if head:
+        msg = "folder name must be excluded: {}".format(path)
+        raise Exception(msg)
+
+    root, ext = os.path.splitext(tail)
+    if ext in ['', '.']:
+        msg = "file extension is missing: {}".format(tail)
+        raise Exception(msg)
+
+
+class Observation(object):
+    """Represents the data in a ZC record, and interprets it."""
+    def __init__(self, zc_node):
+        self.zc_node = zc_node
+
+    def media(self):
+        """Generate the filenames mentioned. Raises ParseException if something
+        is wrong with a filename."""
+        for n_node in self.zc_node.xpath('N'):
+            # Video fileame with an optional '|'
+            path = n_node.text.split('|')[0].strip()
+            _check_filename(path)
+            yield path
+
+        for m_node in self.zc_node.xpath('M'):
+            # Photo filename
+            path = m_node.text.strip()
+            _check_filename(path)
+            yield path

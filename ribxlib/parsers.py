@@ -15,10 +15,7 @@ from enum import Enum
 from lxml import etree
 from osgeo import ogr
 
-from ribxlib.models import Drain
-from ribxlib.models import Manhole
-from ribxlib.models import Pipe
-from ribxlib.models import Ribx
+from ribxlib import models
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +24,6 @@ logger = logging.getLogger(__name__)
 NS = {
     "gml": "http://www.opengis.net/gml",
 }
-
-
-class ParseException(Exception):
-    pass
 
 
 class Mode(Enum):
@@ -63,7 +56,7 @@ def parse(f, mode):
         tree = etree.parse(f, parser)
     except etree.XMLSyntaxError as e:
         logger.error(e)
-        return Ribx(), _log(parser)
+        return models.Ribx(), _log(parser)
 
     # At this point, the document is well formed.
 
@@ -72,7 +65,7 @@ def parse(f, mode):
 
     error_log = _log(parser)
 
-    ribx = Ribx()
+    ribx = models.Ribx()
     ribx.pipes = _pipes(tree, mode, error_log)
     ribx.manholes = _manholes(tree, mode, error_log)
     ribx.drains = _drains(tree, mode, error_log)
@@ -101,24 +94,6 @@ def _log2(node, expr, e, error_log):
     logger.error(message)
 
 
-def _check_filename(path):
-    """Check file name.
-
-    Folder name must be excluded.
-    Extension must be present.
-
-    """
-    head, tail = ntpath.split(path)
-    if head:
-        msg = "folder name must be excluded: {}".format(path)
-        raise Exception(msg)
-
-    root, ext = os.path.splitext(tail)
-    if ext in ['', '.']:
-        msg = "file extension is missing: {}".format(tail)
-        raise Exception(msg)
-
-
 def _pipes(tree, mode, error_log):
     """Return a list of pipes.
 
@@ -139,10 +114,11 @@ def _pipes(tree, mode, error_log):
             expr = 'AAA|GAA'
             item = node.xpath(expr, namespaces=NS)
             if not item:
-                raise ParseException("Expected AAA or GAA in pipe record")
+                raise models.ParseException(
+                    "Expected AAA or GAA in pipe record")
             item = item[0]
             pipe_ref = item.text.strip()
-            pipe = Pipe(pipe_ref)
+            pipe = models.Pipe(pipe_ref)
             pipe.sourceline = item.sourceline
 
             # AAD (inspection) or GAD (cleaning) : manhole1 reference
@@ -151,10 +127,11 @@ def _pipes(tree, mode, error_log):
             expr = 'AAD|GAD'
             item = node.xpath(expr, namespaces=NS)
             if not item:
-                raise ParseException("Expected AAD or GAD in pipe record")
+                raise models.ParseException(
+                    "Expected AAD or GAD in pipe record")
             item = item[0]
             manhole1_ref = item.text.strip()
-            manhole1 = Manhole(manhole1_ref)
+            manhole1 = models.Manhole(manhole1_ref)
             manhole1.sourceline = item.sourceline
             pipe.manhole1 = manhole1
 
@@ -164,10 +141,11 @@ def _pipes(tree, mode, error_log):
             expr = 'AAF|GAF'
             item = node.xpath(expr, namespaces=NS)
             if not item:
-                raise ParseException("Expected AAF or GAF in pipe record")
+                raise models.ParseException(
+                    "Expected AAF or GAF in pipe record")
             item = item[0]
             manhole2_ref = item.text.strip()
-            manhole2 = Manhole(manhole2_ref)
+            manhole2 = models.Manhole(manhole2_ref)
             manhole2.sourceline = item.sourceline
             pipe.manhole2 = manhole2
 
@@ -245,46 +223,24 @@ def _pipes(tree, mode, error_log):
 
             if node_set:
                 video = node_set[0].text.strip()
-                _check_filename(video)
+                models._check_filename(video)
                 pipe.media.add(video)
 
             # ZC: observation
             # Occurrence: 0 for pre-inspection
             # Occurrence: * for inspection
-
             expr = 'ZC'
             node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
                 msg = "maxOccurs = 0 in {}".format(mode)
-                raise Exception(msg)
+                raise models.ParseException(msg)
 
-            # N: file name of video
-            # Occurrence: 0 for pre-inspection
-            # Occurrence: * for inspection
-
-            expr = 'ZC/N'
-            node_set = node.xpath(expr, namespaces=NS)
-
-            for item in node_set:
-                video = item.text.split('|')[0].strip()
-                _check_filename(video)
-                pipe.media.add(video)
-
-            # M: file name of photo
-            # Occurrence: 0 for pre-inspection
-            # Occurrence: * for inspection
-
-            expr = 'ZC/M'
-            node_set = node.xpath(expr, namespaces=NS)
-
-            for item in node_set:
-                photo = item.text.strip()
-                _check_filename(photo)
-                pipe.media.add(photo)
+            for zc_node in node_set:
+                observation = models.Observation(zc_node)
+                pipe.media.update(observation.media())
 
             # All well...
-
             pipes.append(pipe)
 
         except Exception as e:
@@ -314,7 +270,7 @@ def _manholes(tree, mode, error_log):
             expr = 'CAA|JAA'
             item = node.xpath(expr, namespaces=NS)[0]
             manhole_ref = item.text.strip()
-            manhole = Manhole(manhole_ref)
+            manhole = models.Manhole(manhole_ref)
             manhole.sourceline = item.sourceline
 
             # CAB: manhole coordinates
@@ -376,34 +332,24 @@ def _manholes(tree, mode, error_log):
 
             if node_set:
                 video = node_set[0].text.strip()
-                _check_filename(video)
+                models._check_filename(video)
                 manhole.media.add(video)
 
             # ZC: observation
             # Occurrence: 0 for pre-inspection
             # Occurrence: * for inspection
-
             expr = 'ZC'
             node_set = node.xpath(expr, namespaces=NS)
 
             if mode == Mode.PREINSPECTION and len(node_set) != 0:
                 msg = "maxOccurs = 0 in {}".format(mode)
-                raise Exception(msg)
+                raise models.ParseException(msg)
 
-            # M: file name of photo
-            # Occurrence: 0 for pre-inspection
-            # Occurrence: * for inspection
-
-            expr = 'ZC/M'
-            node_set = node.xpath(expr, namespaces=NS)
-
-            for item in node_set:
-                photo = item.text.strip()
-                _check_filename(photo)
-                manhole.media.add(photo)
+            for zc_node in node_set:
+                observation = models.Observation(zc_node)
+                manhole.media.update(observation.media())
 
             # All well...
-
             manholes.append(manhole)
 
         except Exception as e:
@@ -432,7 +378,7 @@ def _drains(tree, mode, error_log):
             expr = 'EAA'
             item = node.xpath(expr, namespaces=NS)[0]
             drain_ref = item.text.strip()
-            drain = Drain(drain_ref)
+            drain = models.Drain(drain_ref)
             drain.sourceline = item.sourceline
 
             # EAB: drain coordinates
@@ -482,7 +428,6 @@ def _drains(tree, mode, error_log):
             # ZC: observation
             # Occurrence: 0 for pre-inspection
             # Occurrence: * for inspection
-
             expr = 'ZC'
             node_set = node.xpath(expr, namespaces=NS)
 
@@ -490,20 +435,11 @@ def _drains(tree, mode, error_log):
                 msg = "maxOccurs = 0 in {}".format(mode)
                 raise Exception(msg)
 
-            # M: file name of photo
-            # Occurrence: 0 for pre-inspection
-            # Occurrence: * for inspection
-
-            expr = 'ZC/M'
-            node_set = node.xpath(expr, namespaces=NS)
-
-            for item in node_set:
-                photo = item.text.strip()
-                _check_filename(photo)
-                drain.media.add(photo)
+            for zc_node in node_set:
+                observation = models.Observation(zc_node)
+                drain.media.update(observation.media())
 
             # All well...
-
             drains.append(drain)
 
         except Exception as e:
