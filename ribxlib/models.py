@@ -40,17 +40,28 @@ class Ribx(object):
         return media
 
 
-class Pipe(object):
-    """Sewerage pipe (`rioolbuis` in Dutch).
+class Thing(object):
+    """Common superclass for the various kinds of things. The more we
+    can put in here, the better."""
+    has_video = False
 
-    """
     def __init__(self, ref):
         self.ref = ref
-        self.manhole1 = None
-        self.manhole2 = None
         self.inspection_date = None
         self.media = set()
         self.sourceline = None
+
+
+class Pipe(Thing):
+    """Sewerage pipe (`rioolbuis` in Dutch).
+
+    """
+    has_video = True
+
+    def __init__(self, ref):
+        super(Pipe, self).__init__(ref)
+        self.manhole1 = None
+        self.manhole2 = None
 
     def __str__(self):
         return self.ref
@@ -66,31 +77,45 @@ class Pipe(object):
             logger.error(e)
 
 
-class Manhole(object):
+class InspectionPipe(Pipe):
+    tag = 'ZB_A'
+
+
+class CleaningPipe(Pipe):
+    tag = 'ZB_G'
+
+
+class Manhole(Thing):
     """A covered hole to a sewerage pipe (`put` in Dutch).
 
     """
+    has_video = True
+
     def __init__(self, ref):
-        self.ref = ref
+        super(Manhole, self).__init__(ref)
         self.geom = None
-        self.inspection_date = None
-        self.media = set()
-        self.sourceline = None
 
     def __str__(self):
         return self.ref
 
 
-class Drain(object):
+class InspectionManhole(Manhole):
+    tag = 'ZB_C'
+
+
+class CleaningManhole(Manhole):
+    tag = 'ZB_J'
+
+
+class Drain(Thing):
     """A storm drain (`kolk` in Dutch).
 
     """
+    tag = 'ZB_E'
+
     def __init__(self, ref):
-        self.ref = ref
+        super(Drain, self).__init__(ref)
         self.geom = None
-        self.inspection_date = None
-        self.media = set()
-        self.sourceline = None
         self.owner = ''
 
     def __str__(self):
