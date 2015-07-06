@@ -50,6 +50,11 @@ class Thing(object):
         self.inspection_date = None
         self.media = set()
         self.sourceline = None
+        self.work_impossible = None  # If it was, this holds the reason
+
+    @classmethod
+    def xd_explanation(self, xd):
+        return xd
 
 
 class Pipe(Thing):
@@ -76,6 +81,16 @@ class Pipe(Thing):
         except Exception as e:
             logger.error(e)
 
+    @classmethod
+    def xd_explanation(self, xd):
+        # Taken from the modelbeschrijving PDF page 41, see
+        # ribxlib/doc.
+        return {
+            'A': 'Voertuig/obstakel op toegang',
+            'B': 'Straat niet toegankelijk voor het voertuig',
+            'Z': 'Andere reden.'
+        }.get(xd, 'Onbekende xXD code {}'.format(xd))
+
 
 class InspectionPipe(Pipe):
     tag = 'ZB_A'
@@ -97,6 +112,19 @@ class Manhole(Thing):
 
     def __str__(self):
         return self.ref
+
+    @classmethod
+    def xd_explanation(self, xd):
+        # Taken from the modelbeschrijving PDF page 46, see
+        # ribxlib/doc.
+        return {
+            'A': 'Voertuig/obstakel op toegang',
+            'B': 'Straat niet toegankelijk voor het voertuig',
+            'C': 'Groen blokkeert de toegang',
+            'D': 'Niet aangetroffen',
+            'E': 'Deksel vast',
+            'Z': 'Andere reden.'
+        }.get(xd, 'Onbekende xXD code {}'.format(xd))
 
 
 class InspectionManhole(Manhole):

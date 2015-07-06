@@ -1,4 +1,4 @@
-# (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
+# (c) Nelen & SchuurmOans.  GPL licensed, see LICENSE.rst.
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
@@ -65,22 +65,22 @@ def parse(f, mode):
 
     ribx = models.Ribx()
 
-    inspection_pipe_parser = ItemParser(
+    inspection_pipe_parser = TreeParser(
         tree, models.InspectionPipe, mode, error_log)
-    cleaning_pipe_parser = ItemParser(
+    cleaning_pipe_parser = TreeParser(
         tree, models.CleaningPipe, mode, error_log)
-    drain_parser = ItemParser(
+    drain_parser = TreeParser(
         tree, models.Drain, mode, error_log)
-    inspection_manhole_parser = ItemParser(
+    inspection_manhole_parser = TreeParser(
         tree, models.InspectionManhole, mode, error_log)
-    cleaning_manhole_parser = ItemParser(
+    cleaning_manhole_parser = TreeParser(
         tree, models.CleaningManhole, mode, error_log)
 
-    ribx.drains = drain_parser.items()
+    ribx.drains = drain_parser.things()
     ribx.manholes = (
-        inspection_manhole_parser.items() + cleaning_manhole_parser.items())
+        inspection_manhole_parser.things() + cleaning_manhole_parser.things())
     ribx.pipes = (
-        inspection_pipe_parser.items() + cleaning_pipe_parser.items())
+        inspection_pipe_parser.things() + cleaning_pipe_parser.things())
 
     return ribx, error_log
 
@@ -106,9 +106,11 @@ def _log2(node, expr, e, error_log):
     logger.error(message)
 
 
-class ItemParser(object):
-    """Parser for any kind of unit; the tags work very similarly, except
-    for the different prefixes."""
+class TreeParser(object):
+    """Parser for any kind of thing (Pipe / Manhole / Drain); all the tags
+    work very similarly, except for different prefixes.
+
+    """
 
     def __init__(self, tree, model, mode, error_log):
         self.tree = tree
@@ -116,23 +118,101 @@ class ItemParser(object):
         self.mode = mode
         self.error_log = error_log
 
+    def things(self):
+        """Return all things of this model that are in the tree."""
+        things = []
+
+        nodes = self.tree.xpath('//{}'.format(self.model.tag), namespaces=NS)
+
+        for node in nodes:
+            thing_parser = ThingParser(node, self.model, self.mode)
+            try:
+                instance = thing_parser.parse()
+                if instance:
+                    things.append(instance)
+            except Exception as e:
+                _log2(node, thing_parser.expr, e, self.error_log)
+
+        return things
+
+
+class ThingParser(object):
+    """Parse an individual node."""
+    def __init__(self, node, model, mode):
+        self.node = node
+        self.model = model
+        self.mode = mode
+
         self.expr = ''  # Keep it around so we can log it in case of error
+
+    def xpath(self, expr):
+        self.expr = expr
+        return self.node.xpath(expr, namespaces=NS)
 
     def tag(self, name):
         return self.model.tag[-1] + name
 
-    def tag_value(self, node, name, complain=False):
-        self.expr = self.tag(name)
-        item = node.xpath(self.expr, namespaces=NS)[0]
-        if not item and complain:
-            raise models.ParseException(
-                "Expected {} record".format(self.tag(name)))
+    def parse(self):
+        # ?AA: reference
+        item_ref, item_sourceline = self.tag_value('AA', complain=True)
+        instance = self.model(item_ref)
+        instance.sourceline = item_sourceline
+
+        instance.inspection_date = self.get_inspection_date()
+
+        if isinstance(self.model, models.Pipe):
+            # We need two manholes and two sets of coordinates.
+            manhole1_ref, manhole1_sourceline = self.tag_value(
+                'AD', complain=True)
+            instance.manhole1 = models.Manhole(manhole1_ref)
+            instance.manhole1.sourceline = manhole1_sourceline
+            instance.manhole1.geom = self.tag_point('AE')
+
+            manhole2_ref, manhole2_sourceline = self.tag_value(
+                self.node, 'AF', complain=True)
+            instance.manhole2 = models.Manhole(manhole2_ref)
+            instance.manhole2.sourceline = manhole2_sourceline
+            instance.manhole2.geom = self.tag_point('AG')
+
+        else:
+            # ?AB holds coordinates
+            instance.geom = self.tag_point('AB')
+
+        # ?AQ: Ownership
+        instance.owner = self.tag_value('AQ')
+
+        if self.model.has_video:
+            instance.media.update(self.get_video())
+
+        # Maybe inspection / cleaning wasn't possible
+        instance.work_impossible = self.get_work_impossible()
+
+        # ZC nodes
+        for observation in self.get_observations():
+            instance.media.update(observation.media())
+
+        # All well...
+        return instance
+
+    def tag_value(self, name, complain=False):
+        items = self.xpath(self.tag(name))
+        if not items:
+            if complain:
+                raise models.ParseException(
+                    "Expected {} record".format(self.tag(name)))
+            else:
+                return None, None
+        item = items[0]
         return item.text.strip(), item.sourceline
 
-    def tag_point(self, node, name):
+    def tag_attribute(self, name, attribute):
+        item = self.xpath('{}/@{}'.format(self.tag(name), self.tag(attribute)))
+        if item:
+            return item[0]
+
+    def tag_point(self, name):
         """Interpret tag contents as gml:Point and return geom"""
-        self.expr = '{}/gml:Point/gml:pos'.format(self.tag(name))
-        node_set = node.xpath(self.expr, namespaces=NS)
+        node_set = self.xpath('{}/gml:Point/gml:pos'.format(self.tag(name)))
 
         if node_set:
             coordinates = map(float, node_set[0].text.split())
@@ -140,105 +220,80 @@ class ItemParser(object):
             point.AddPoint(*coordinates)
             return point
 
-    def items(self):
-        """Return all items of the right model that are in the tree."""
-        items = []
+    def get_work_impossible(self):
+        xd, sourceline = self.tag_value('XD')
+        if xd:
+            xd_explanation = self.model.xd_explanation(xd)
 
-        # In inspection mode, skip everything without an inspection date.
-        # ?BF must be present for something considered to be inspected!
+            attr_explanation = self.tag_attribute('XD', 'DE') or ''
 
-        nodes = self.tree.xpath('//{}'.format(self.model.tag), namespaces=NS)
+            tag_explanation, sourceline = self.tag_value('DE')
 
-        for node in nodes:
-            try:
-                # ?AA: reference
-                item_ref, item_sourceline = self.tag_value(
-                    node, 'AA', complain=True)
-                instance = self.model(item_ref)
-                instance.sourceline = item_sourceline
+            explanation = "{} ({})\n{}\n{}".format(
+                xd_explanation, xd, attr_explanation,
+                tag_explanation).strip()
 
-                if isinstance(self.model, models.Pipe):
-                    # We need two manholes and two sets of coordinates.
-                    manhole1_ref, manhole1_sourceline = self.tag_value(
-                        node, 'AD', complain=True)
-                    instance.manhole1 = models.Manhole(manhole1_ref)
-                    instance.manhole1.sourceline = manhole1_sourceline
-                    instance.manhole1.geom = set.tag_point('AE')
+            return explanation
 
-                    manhole2_ref, manhole2_sourceline = self.tag_value(
-                        node, 'AF', complain=True)
-                    instance.manhole2 = models.Manhole(manhole2_ref)
-                    instance.manhole2.sourceline = manhole2_sourceline
-                    instance.manhole2.geom = set.tag_point('AG')
+    def get_inspection_date(self):
+        """?BF: inspection date
+        In inspection mode, skip everything without an inspection date.
+        ?BF must be present for something considered to be inspected!
+        Occurrence: 0 for pre-inspection
+        Occurrence: 1 for inspection
+        """
+        node_set = self.xpath(self.tag('BF'))
 
-                else:
-                    # ?AB holds coordinates
-                    instance.geom = self.tag_point(node, 'AB')
+        if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
+            msg = "maxOccurs = 0 in {}".format(self.mode)
+            raise Exception(msg)
 
-                # ?AQ: Ownership
-                instance.owner = self.tag_value(node, 'AQ')
+        if self.mode == Mode.INSPECTION and len(node_set) < 1:
+            msg = "minOccurs = 1 in {}".format(self.mode)
+            raise Exception(msg)
 
-                # ?BF: inspection date
-                # Occurrence: 0 for pre-inspection?
-                # Occurrence: 1 for inspection?
+        if self.mode == Mode.INSPECTION and len(node_set) > 1:
+            msg = "maxOccurs = 1 in {}".format(self.mode)
+            raise Exception(msg)
 
-                node_set = node.xpath(self.tag('BF'), namespaces=NS)
+        if self.mode == Mode.INSPECTION:
+            return datetime.strptime(
+                node_set[0].text.strip(),
+                "%Y-%m-%d"
+            )
+        else:
+            return None
 
-                if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
-                    msg = "maxOccurs = 0 in {}".format(self.mode)
-                    raise Exception(msg)
+    def get_video(self):
+        # ?BS: file name of video
+        # Occurrence: 0 for pre-inspection
+        # Occurrence: 0..1 for inspection
+        node_set = self.xpath(self.tag('BS'))
 
-                if self.mode == Mode.INSPECTION and len(node_set) < 1:
-                    msg = "minOccurs = 1 in {}".format(self.mode)
-                    raise Exception(msg)
+        if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
+            msg = "maxOccurs = 0 in {}".format(self.mode)
+            raise Exception(msg)
 
-                if self.mode == Mode.INSPECTION and len(node_set) > 1:
-                    msg = "maxOccurs = 1 in {}".format(self.mode)
-                    raise Exception(msg)
+        if self.mode == Mode.INSPECTION and len(node_set) > 1:
+            msg = "maxOccurs = 1 in {}".format(self.mode)
+            raise Exception(msg)
 
-                if self.mode == Mode.INSPECTION:
-                    instance.inspection_date = datetime.strptime(
-                        node_set[0].text.strip(),
-                        "%Y-%m-%d"
-                    )
+        if node_set:
+            video = node_set[0].text.strip()
+            models._check_filename(video)
+            return set([video])
+        else:
+            return set([])
 
-                if self.model.has_video:
-                    # ?BS: file name of video
-                    # Occurrence: 0 for pre-inspection
-                    # Occurrence: 0..1 for inspection
+    def get_observations(self):
+        # ZC: observation
+        # Occurrence: 0 for pre-inspection
+        # Occurrence: * for inspection
+        node_set = self.xpath('ZC')
 
-                    node_set = node.xpath(self.tag('BS'), namespaces=NS)
+        if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
+            msg = "maxOccurs = 0 in {}".format(self.mode)
+            raise Exception(msg)
 
-                    if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
-                        msg = "maxOccurs = 0 in {}".format(self.mode)
-                        raise Exception(msg)
-
-                    if self.mode == Mode.INSPECTION and len(node_set) > 1:
-                        msg = "maxOccurs = 1 in {}".format(self.mode)
-                        raise Exception(msg)
-
-                    if node_set:
-                        video = node_set[0].text.strip()
-                        models._check_filename(video)
-                        instance.media.add(video)
-
-                # ZC: observation
-                # Occurrence: 0 for pre-inspection
-                # Occurrence: * for inspection
-                node_set = node.xpath('ZC', namespaces=NS)
-
-                if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
-                    msg = "maxOccurs = 0 in {}".format(self.mode)
-                    raise Exception(msg)
-
-                for zc_node in node_set:
-                    observation = models.Observation(zc_node)
-                    instance.media.update(observation.media())
-
-                # All well...
-                items.append(instance)
-
-            except Exception as e:
-                _log2(node, self.expr, e, self.error_log)
-
-        return items
+        for zc_node in node_set:
+            yield models.Observation(zc_node)
