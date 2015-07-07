@@ -76,11 +76,16 @@ def parse(f, mode):
     cleaning_manhole_parser = TreeParser(
         tree, models.CleaningManhole, mode, error_log)
 
-    ribx.drains = drain_parser.things()
+    ribx.drains = drain_parser.elements()
+
+    # The next two should really be split, but for backwards
+    # compatibility, don't do that yet.
     ribx.manholes = (
-        inspection_manhole_parser.things() + cleaning_manhole_parser.things())
+        inspection_manhole_parser.elements() +
+        cleaning_manhole_parser.elements())
     ribx.pipes = (
-        inspection_pipe_parser.things() + cleaning_pipe_parser.things())
+        inspection_pipe_parser.elements() +
+        cleaning_pipe_parser.elements())
 
     return ribx, error_log
 
@@ -118,25 +123,25 @@ class TreeParser(object):
         self.mode = mode
         self.error_log = error_log
 
-    def things(self):
-        """Return all things of this model that are in the tree."""
-        things = []
+    def elements(self):
+        """Return all SewerElement model instances that are in the tree."""
+        elements = []
 
         nodes = self.tree.xpath('//{}'.format(self.model.tag), namespaces=NS)
 
         for node in nodes:
-            thing_parser = ThingParser(node, self.model, self.mode)
+            element_parser = ElementParser(node, self.model, self.mode)
             try:
-                instance = thing_parser.parse()
+                instance = element_parser.parse()
                 if instance:
-                    things.append(instance)
+                    elements.append(instance)
             except Exception as e:
-                _log2(node, thing_parser.expr, e, self.error_log)
+                _log2(node, element_parser.expr, e, self.error_log)
 
-        return things
+        return elements
 
 
-class ThingParser(object):
+class ElementParser(object):
     """Parse an individual node."""
     def __init__(self, node, model, mode):
         self.node = node
@@ -187,7 +192,7 @@ class ThingParser(object):
         # Maybe inspection / cleaning wasn't possible
         instance.work_impossible = self.get_work_impossible()
 
-        # If a *XC tag exists, this thing was new, not planned
+        # If a *XC tag exists, this element was new, not planned
         # *XC = "Ontbreekt in opracht"
         if self.xpath(self.tag('XC')):
             instance.new = True

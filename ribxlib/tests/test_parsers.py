@@ -8,7 +8,7 @@ from ribxlib import parsers
 
 class TestThingParser(unittest.TestCase):
     def setUp(self):
-        self.parser = parsers.ThingParser(
+        self.parser = parsers.ElementParser(
             None, models.Drain, parsers.Mode.INSPECTION)
 
     def test_work_impossible(self):

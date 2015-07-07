@@ -40,26 +40,40 @@ class Ribx(object):
         return media
 
 
-class Thing(object):
-    """Common superclass for the various kinds of things. The more we
+class SewerElement(object):
+    """Common superclass for pipes, drains and manholes. The more we
     can put in here, the better."""
+    # According to the spec, not everything can have the video
+    # tag. Subclasses that can set this to True.
     has_video = False
 
     def __init__(self, ref):
+        # Code of this element
         self.ref = ref
+
+        # Stays empty if file is used to describe the work to be done, must be
+        # filled in if the work was done (or turned out not to be possible).
         self.inspection_date = None
+
+        # A set of related filenames that will be uploaded later.
         self.media = set()
+
+        # Line in the RIBX file where this element's node started.
         self.sourceline = None
-        self.work_impossible = None  # If it was, this holds the reason
-        self.new = False  # True if a '*XC' tag was used ("ontbreekt
-                          # in opdracht")
+
+        # Sometimes it was impossible to do the work, if so then this element
+        # will contain the reason as a string.
+        self.work_impossible = None
+
+        # True if a '*XC' tag was used ("ontbreekt in opdracht")
+        self.new = False
 
     @classmethod
     def xd_explanation(self, xd):
         return xd
 
 
-class Pipe(Thing):
+class Pipe(SewerElement):
     """Sewerage pipe (`rioolbuis` in Dutch).
 
     """
@@ -102,7 +116,7 @@ class CleaningPipe(Pipe):
     tag = 'ZB_G'
 
 
-class Manhole(Thing):
+class Manhole(SewerElement):
     """A covered hole to a sewerage pipe (`put` in Dutch).
 
     """
@@ -137,7 +151,7 @@ class CleaningManhole(Manhole):
     tag = 'ZB_J'
 
 
-class Drain(Thing):
+class Drain(SewerElement):
     """A storm drain (`kolk` in Dutch).
 
     """
