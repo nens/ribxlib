@@ -1,9 +1,6 @@
 import unittest
 
-from ribxlib.models import Drain
-from ribxlib.models import Manhole
-from ribxlib.models import Pipe
-from ribxlib.models import Ribx
+from ribxlib import models
 
 
 class ModelTest(unittest.TestCase):
@@ -12,21 +9,21 @@ class ModelTest(unittest.TestCase):
         """Docstring.
 
         """
-        ribx = Ribx()
+        ribx = models.Ribx()
 
-        pipe = Pipe("Pipe")
-        ribx.pipes.append(pipe)
+        pipe = models.CleaningPipe("Pipe")
+        ribx.cleaning_pipes.append(pipe)
 
-        manhole1 = Manhole("Manhole1")
+        manhole1 = models.CleaningManhole("Manhole1")
         pipe.manhole1 = manhole1
 
-        manhole2 = Manhole("Manhole2")
+        manhole2 = models.CleaningManhole("Manhole2")
         pipe.manhole2 = manhole2
 
-        manhole3 = Manhole("Manhole3")
-        ribx.manholes.append(manhole3)
+        manhole3 = models.CleaningManhole("Manhole3")
+        ribx.cleaning_manholes.append(manhole3)
 
-        drain = Drain("Drain")
+        drain = models.Drain("Drain")
         ribx.drains.append(drain)
 
         pipe.media.add("video.mpg")
