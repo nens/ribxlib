@@ -5,7 +5,21 @@ Changelog of ribxlib
 0.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Refactored parsers.py a lot; there is now a single parser for
+  all types of element.
+
+- Return "InspectionManholes" and "CleaningManholes" separately (and
+  the same for pipes). This means lizard-progress can check that the
+  right type was used, which will protect against some annoying errors
+  users made (uploading a file to the wrong Activity and having it
+  accepted, overwriting the right data).
+
+- Check for "XD" tags in element headers, which signify that it was not
+  possible to do that part of the assigned work. The commentary is
+  gatherered and returned too, for use in lizard-progress.
+
+- Check for "XC" tags in element headers, which signify that the element
+  was not part of the assigned work ("found in the field").
 
 
 0.3 (2015-06-09)
