@@ -228,7 +228,18 @@ class ElementParser(object):
     def get_work_impossible(self):
         xd, sourceline = self.tag_value('XD')
         if xd:
-            xd_explanation = self.model.xd_explanation(xd)
+            xd_explanation = {
+                'A': 'Voertuig/obstakel op toegang',
+                'B': 'Straat niet toegankelijk voor het voertuig',
+                'C': 'Groen blokkeert de toegang',
+                'D': 'Niet aangetroffen',
+                'E': 'Deksel vast',
+                'Z': 'Andere reden.'
+            }.get(xd, None)
+
+            if xd_explanation is None:
+                raise Exception('Onbekende {}XD code "{}"'.format(
+                    self.tag('XD'), xd))
 
             attr_explanation = self.tag_attribute('XD', 'DE') or ''
             if xd == 'Z' and not attr_explanation:
