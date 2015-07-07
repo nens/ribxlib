@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.4 (unreleased)
+0.4 (2015-07-07)
 ----------------
 
 - Refactored parsers.py a lot; there is now a single parser for
