@@ -165,7 +165,7 @@ class ElementParser(object):
 
         instance.inspection_date = self.get_inspection_date()
 
-        if isinstance(self.model, models.Pipe):
+        if issubclass(self.model, models.Pipe):
             # We need two manholes and two sets of coordinates.
             manhole1_ref, manhole1_sourceline = self.tag_value(
                 'AD', complain=True)
@@ -174,7 +174,7 @@ class ElementParser(object):
             instance.manhole1.geom = self.tag_point('AE')
 
             manhole2_ref, manhole2_sourceline = self.tag_value(
-                self.node, 'AF', complain=True)
+                'AF', complain=True)
             instance.manhole2 = models.Manhole(manhole2_ref)
             instance.manhole2.sourceline = manhole2_sourceline
             instance.manhole2.geom = self.tag_point('AG')
@@ -240,7 +240,7 @@ class ElementParser(object):
                 raise Exception(
                     'Expected explanation for Z code in {} tag'
                     .format(self.tag('DE')))
-            elif xd != 'Z' and not attr_explanation:
+            elif xd != 'Z' and attr_explanation:
                 raise Exception(
                     'Explanation in {} tag not allowed without Z code.'
                     .format(self.tag('DE')))
