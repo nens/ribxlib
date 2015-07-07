@@ -76,16 +76,11 @@ def parse(f, mode):
     cleaning_manhole_parser = TreeParser(
         tree, models.CleaningManhole, mode, error_log)
 
+    ribx.inspection_pipes = inspection_pipe_parser.elements()
+    ribx.cleaning_pipes = cleaning_pipe_parser.elements()
+    ribx.inspection_manholes = inspection_manhole_parser.elements()
+    ribx.cleaning_manholes = cleaning_manhole_parser.elements()
     ribx.drains = drain_parser.elements()
-
-    # The next two should really be split, but for backwards
-    # compatibility, don't do that yet.
-    ribx.manholes = (
-        inspection_manhole_parser.elements() +
-        cleaning_manhole_parser.elements())
-    ribx.pipes = (
-        inspection_pipe_parser.elements() +
-        cleaning_pipe_parser.elements())
 
     return ribx, error_log
 

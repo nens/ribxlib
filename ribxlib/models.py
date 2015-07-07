@@ -22,18 +22,21 @@ class ParseException(Exception):
 class Ribx(object):
 
     def __init__(self):
-        self.pipes = []
-        self.manholes = []
+        self.inspection_pipes = []
+        self.cleaning_pipes = []
+        self.inspection_manholes = []
+        self.cleaning_manholes = []
         self.drains = []
 
     @property
     def media(self):
+        """Combine the media sets of all elements in this RIBX."""
         media = set()
-        for pipe in self.pipes:
+        for pipe in self.inspection_pipes + self.cleaning_pipes:
             media.update(pipe.media)
             media.update(pipe.manhole1.media)
             media.update(pipe.manhole2.media)
-        for manhole in self.manholes:
+        for manhole in self.inspection_manholes + self.cleaning_manholes:
             media.update(manhole.media)
         for drain in self.drains:
             media.update(drain.media)
