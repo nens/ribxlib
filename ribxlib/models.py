@@ -22,35 +22,70 @@ class ParseException(Exception):
 class Ribx(object):
 
     def __init__(self):
-        self.pipes = []
-        self.manholes = []
+        self.inspection_pipes = []
+        self.cleaning_pipes = []
+        self.inspection_manholes = []
+        self.cleaning_manholes = []
         self.drains = []
 
     @property
     def media(self):
+        """Combine the media sets of all elements in this RIBX."""
         media = set()
-        for pipe in self.pipes:
+        for pipe in self.inspection_pipes + self.cleaning_pipes:
             media.update(pipe.media)
             media.update(pipe.manhole1.media)
             media.update(pipe.manhole2.media)
-        for manhole in self.manholes:
+        for manhole in self.inspection_manholes + self.cleaning_manholes:
             media.update(manhole.media)
         for drain in self.drains:
             media.update(drain.media)
         return media
 
 
-class Pipe(object):
+class SewerElement(object):
+    """Common superclass for pipes, drains and manholes. The more we
+    can put in here, the better."""
+    # According to the spec, not everything can have the video
+    # tag. Subclasses that can set this to True.
+    has_video = False
+
+    def __init__(self, ref):
+        # Code of this element
+        self.ref = ref
+
+        # Stays empty if file is used to describe the work to be done, must be
+        # filled in if the work was done (or turned out not to be possible).
+        self.inspection_date = None
+
+        # A set of related filenames that will be uploaded later.
+        self.media = set()
+
+        # Line in the RIBX file where this element's node started.
+        self.sourceline = None
+
+        # Sometimes it was impossible to do the work, if so then this element
+        # will contain the reason as a string.
+        self.work_impossible = None
+
+        # True if a '*XC' tag was used ("ontbreekt in opdracht")
+        self.new = False
+
+    @classmethod
+    def xd_explanation(self, xd):
+        return xd
+
+
+class Pipe(SewerElement):
     """Sewerage pipe (`rioolbuis` in Dutch).
 
     """
+    has_video = True
+
     def __init__(self, ref):
-        self.ref = ref
+        super(Pipe, self).__init__(ref)
         self.manhole1 = None
         self.manhole2 = None
-        self.inspection_date = None
-        self.media = set()
-        self.sourceline = None
 
     def __str__(self):
         return self.ref
@@ -65,32 +100,69 @@ class Pipe(object):
         except Exception as e:
             logger.error(e)
 
+    @classmethod
+    def xd_explanation(self, xd):
+        # Taken from the modelbeschrijving PDF page 41, see
+        # ribxlib/doc.
+        return {
+            'A': 'Voertuig/obstakel op toegang',
+            'B': 'Straat niet toegankelijk voor het voertuig',
+            'Z': 'Andere reden.'
+        }.get(xd, 'Onbekende xXD code {}'.format(xd))
 
-class Manhole(object):
+
+class InspectionPipe(Pipe):
+    tag = 'ZB_A'
+
+
+class CleaningPipe(Pipe):
+    tag = 'ZB_G'
+
+
+class Manhole(SewerElement):
     """A covered hole to a sewerage pipe (`put` in Dutch).
 
     """
+    has_video = True
+
     def __init__(self, ref):
-        self.ref = ref
+        super(Manhole, self).__init__(ref)
         self.geom = None
-        self.inspection_date = None
-        self.media = set()
-        self.sourceline = None
 
     def __str__(self):
         return self.ref
 
+    @classmethod
+    def xd_explanation(self, xd):
+        # Taken from the modelbeschrijving PDF page 46, see
+        # ribxlib/doc.
+        return {
+            'A': 'Voertuig/obstakel op toegang',
+            'B': 'Straat niet toegankelijk voor het voertuig',
+            'C': 'Groen blokkeert de toegang',
+            'D': 'Niet aangetroffen',
+            'E': 'Deksel vast',
+            'Z': 'Andere reden.'
+        }.get(xd, 'Onbekende xXD code {}'.format(xd))
 
-class Drain(object):
+
+class InspectionManhole(Manhole):
+    tag = 'ZB_C'
+
+
+class CleaningManhole(Manhole):
+    tag = 'ZB_J'
+
+
+class Drain(SewerElement):
     """A storm drain (`kolk` in Dutch).
 
     """
+    tag = 'ZB_E'
+
     def __init__(self, ref):
-        self.ref = ref
+        super(Drain, self).__init__(ref)
         self.geom = None
-        self.inspection_date = None
-        self.media = set()
-        self.sourceline = None
         self.owner = ''
 
     def __str__(self):
