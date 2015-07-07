@@ -51,6 +51,8 @@ class Thing(object):
         self.media = set()
         self.sourceline = None
         self.work_impossible = None  # If it was, this holds the reason
+        self.new = False  # True if a '*XC' tag was used ("ontbreekt
+                          # in opdracht")
 
     @classmethod
     def xd_explanation(self, xd):

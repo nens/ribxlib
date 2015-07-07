@@ -1,4 +1,4 @@
-# (c) Nelen & SchuurmOans.  GPL licensed, see LICENSE.rst.
+# (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
@@ -187,6 +187,11 @@ class ThingParser(object):
         # Maybe inspection / cleaning wasn't possible
         instance.work_impossible = self.get_work_impossible()
 
+        # If a *XC tag exists, this thing was new, not planned
+        # *XC = "Ontbreekt in opracht"
+        if self.xpath(self.tag('XC')):
+            instance.new = True
+
         # ZC nodes
         for observation in self.get_observations():
             instance.media.update(observation.media())
@@ -226,6 +231,14 @@ class ThingParser(object):
             xd_explanation = self.model.xd_explanation(xd)
 
             attr_explanation = self.tag_attribute('XD', 'DE') or ''
+            if xd == 'Z' and not attr_explanation:
+                raise Exception(
+                    'Expected explanation for Z code in {} tag'
+                    .format(self.tag('DE')))
+            elif xd != 'Z' and not attr_explanation:
+                raise Exception(
+                    'Explanation in {} tag not allowed without Z code.'
+                    .format(self.tag('DE')))
 
             tag_explanation, sourceline = self.tag_value('DE')
 

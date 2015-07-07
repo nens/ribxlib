@@ -30,3 +30,30 @@ class TestThingParser(unittest.TestCase):
             'Explanation in EDE' in instance.work_impossible)
         self.assertTrue(
             'Explanation in attribute' in instance.work_impossible)
+
+    def test_item_is_not_new(self):
+        self.parser.node = XML("""
+        <ZB_E>
+          <EAA>whee</EAA>
+          <EBF>2015-7-3</EBF>
+          <ZC>
+          </ZC>
+        </ZB_E>
+        """)
+
+        instance = self.parser.parse()
+        self.assertFalse(instance.new)
+
+    def test_item_with_xc_is_new(self):
+        self.parser.node = XML("""
+        <ZB_E>
+          <EAA>whee</EAA>
+          <EBF>2015-7-3</EBF>
+          <EXC>Don't know what kind of values go here</EXC>
+          <ZC>
+          </ZC>
+        </ZB_E>
+        """)
+
+        instance = self.parser.parse()
+        self.assertTrue(instance.new)
