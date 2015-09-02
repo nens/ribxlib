@@ -179,7 +179,7 @@ class ElementParser(object):
             instance.geom = self.tag_point('AB')
 
         # ?AQ: Ownership
-        instance.owner = self.tag_value('AQ')
+        instance.owner = self.tag_value('AQ')[0]
 
         if self.model.has_video:
             instance.media.update(self.get_video())
