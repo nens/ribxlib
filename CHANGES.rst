@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.5 (unreleased)
+0.5 (2015-09-09)
 ----------------
 
 - Fix bug with setting ownership.
