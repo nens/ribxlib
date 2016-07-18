@@ -30,12 +30,12 @@ The following checks are currently implemented:
   this may be empty, but in INSPECTION mode this must contain one video name.
 - ?XD (no work done/work impossible). Also the reason is checked, we have
   the following reasons:
-  - 'A': 'Voertuig/obstakel op toegang'
-  - 'B': 'Straat niet toegankelijk voor het voertuig'
-  - 'C': 'Groen blokkeert de toegang'
-  - 'D': 'Niet aangetroffen'
-  - 'E': 'Deksel vast'
-  - 'Z': 'Andere reden.
+    - 'A': 'Voertuig/obstakel op toegang'
+    - 'B': 'Straat niet toegankelijk voor het voertuig'
+    - 'C': 'Groen blokkeert de toegang'
+    - 'D': 'Niet aangetroffen'
+    - 'E': 'Deksel vast'
+    - 'Z': 'Andere reden.
   If the reason is 'Z' the '?DE' tag is parsed as the reason.
 - ?XC (a new sewerage element that wasn't on the planning)
 - ?ZC (observations, must be empty in PREINSPECTION mode)
