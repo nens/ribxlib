@@ -100,6 +100,10 @@ class Pipe(SewerElement):
 class InspectionPipe(Pipe):
     tag = 'ZB_A'
 
+    def __init__(self, ref):
+        super(InspectionPipe, self).__init__(ref)
+        self.manhole_start = None  # The starting manhole of the inspection
+
 
 class CleaningPipe(Pipe):
     tag = 'ZB_G'
