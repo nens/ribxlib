@@ -54,14 +54,19 @@ class TestInspectionPipeParserRibx_13(unittest.TestCase):
     """Test regarding version 1.3 of Ribx."""
 
     def test_ribx_13_smoke(self):
+        mode = Mode.INSPECTION
+        f = os.path.join(RIBX13_DATA_DIR, "36190148 5300093.ribx")
+        ribx, log = parse(f, mode)
+        # self.assertFalse(log)
+        self.assertFalse(len(log))
+
+    def test_ribx_13_manhole_start_set(self):
         """This ribx has two inspection headers with the same Pipe ref. For
         inspection of Pipes the manhole_start attribute must be set.
         """
         mode = Mode.INSPECTION
         f = os.path.join(RIBX13_DATA_DIR, "36190148 5300093.ribx")
         ribx, log = parse(f, mode)
-        # self.assertFalse(log)
-        self.assertFalse(len(log))
 
         p0, p1 = ribx.inspection_pipes  # there are only 2 pipes (see file)
 
