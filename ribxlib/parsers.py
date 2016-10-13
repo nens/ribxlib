@@ -229,12 +229,12 @@ class ElementParser(object):
             return point
 
     def get_manhole_start(self, instance):
-        """Returns a manhole ref that references the starting manhole of
+        """Return a manhole ref that references the starting manhole of
         a Pipe inspection, which corresponds to either manhole1 or manhole2 of
         the pipe."""
         manhole_start_ref, manhole_start_sourceline = self.tag_value('AB')
-        if manhole_start_ref and manhole_start_ref not in \
-                [instance.manhole1.ref, instance.manhole2.ref]:
+        if (manhole_start_ref and manhole_start_ref not in
+                [instance.manhole1.ref, instance.manhole2.ref]):
             raise Exception(
                 "manhole_start {} doesn't correspond to either manhole1 {} or "
                 "manhole2 {} of the pipe.".format(manhole_start_ref,
