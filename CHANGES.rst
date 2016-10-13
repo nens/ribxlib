@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.6 (unreleased)
+0.6 (2016-10-13)
 ----------------
 
 - Update the parser for inspection_pipes, so that it includes the
