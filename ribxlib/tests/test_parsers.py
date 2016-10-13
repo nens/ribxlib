@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from lxml.etree import XML
@@ -5,6 +6,11 @@ from lxml.etree import fromstring
 
 from ribxlib import models
 from ribxlib import parsers
+from ribxlib.parsers import Mode
+from ribxlib.parsers import parse
+
+RIBX13_DATA_DIR = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'testdata', 'ribx_13')
 
 
 class TestInspectionPipeParser(unittest.TestCase):
@@ -42,6 +48,42 @@ class TestInspectionPipeParser(unittest.TestCase):
             'Explanation in ADE' in instance.work_impossible)
         self.assertTrue(
             'Explanation in attribute' in instance.work_impossible)
+
+
+class TestInspectionPipeParserRibx_13(unittest.TestCase):
+    """Test regarding version 1.3 of Ribx."""
+
+    def test_ribx_13_smoke(self):
+        mode = Mode.INSPECTION
+        f = os.path.join(RIBX13_DATA_DIR, "36190148 5300093.ribx")
+        ribx, log = parse(f, mode)
+        # self.assertFalse(log)
+        self.assertFalse(len(log))
+
+    def test_ribx_13_manhole_start_set(self):
+        """This ribx has two inspection headers with the same Pipe ref. For
+        inspection of Pipes the manhole_start attribute must be set.
+        """
+        mode = Mode.INSPECTION
+        f = os.path.join(RIBX13_DATA_DIR, "36190148 5300093.ribx")
+        ribx, log = parse(f, mode)
+
+        p0, p1 = ribx.inspection_pipes  # there are only 2 pipes (see file)
+
+        self.assertEqual(p0.ref, p1.ref)
+        self.assertNotEqual(p0.manhole_start, p1.manhole_start)
+
+    def test_ribx_13_manhole_start_consistent(self):
+        """Test that manhole_start is one of the two manholes of the pipe."""
+        mode = Mode.INSPECTION
+        f = os.path.join(RIBX13_DATA_DIR, "36190148 5300093.ribx")
+        ribx, log = parse(f, mode)
+        p0, p1 = ribx.inspection_pipes
+
+        self.assertTrue(
+            p0.manhole_start in [p0.manhole1.ref, p0.manhole2.ref])
+        self.assertTrue(
+            p1.manhole_start in [p1.manhole1.ref, p1.manhole2.ref])
 
 
 class TestThingParser(unittest.TestCase):

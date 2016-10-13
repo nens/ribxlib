@@ -5,7 +5,8 @@ Changelog of ribxlib
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Update the parser for inspection_pipes, so that it includes the
+  manhole_start attribute, plus add corresponding tests and test ribx file.
 
 
 0.5 (2015-09-09)

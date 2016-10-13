@@ -174,6 +174,9 @@ class ElementParser(object):
             instance.manhole2.sourceline = manhole2_sourceline
             instance.manhole2.geom = self.tag_point('AG')
 
+            if issubclass(self.model, models.InspectionPipe):
+                instance.manhole_start = self.get_manhole_start(instance)
+
         else:
             # ?AB holds coordinates
             instance.geom = self.tag_point('AB')
@@ -224,6 +227,20 @@ class ElementParser(object):
             point = ogr.Geometry(ogr.wkbPoint)
             point.AddPoint(*coordinates)
             return point
+
+    def get_manhole_start(self, instance):
+        """Return a manhole ref that references the starting manhole of
+        a Pipe inspection, which corresponds to either manhole1 or manhole2 of
+        the pipe."""
+        manhole_start_ref, manhole_start_sourceline = self.tag_value('AB')
+        if (manhole_start_ref and manhole_start_ref not in
+                [instance.manhole1.ref, instance.manhole2.ref]):
+            raise Exception(
+                "manhole_start {} doesn't correspond to either manhole1 {} or "
+                "manhole2 {} of the pipe.".format(manhole_start_ref,
+                                                  instance.manhole1.ref,
+                                                  instance.manhole2.ref))
+        return manhole_start_ref
 
     def get_work_impossible(self):
         xd, sourceline = self.tag_value('XD')
