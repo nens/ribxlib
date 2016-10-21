@@ -241,6 +241,11 @@ class ElementParser(object):
                 "manhole2 {} of the pipe.".format(manhole_start_ref,
                                                   instance.manhole1.ref,
                                                   instance.manhole2.ref))
+
+        if not manhole_start_ref:
+            msg = ("Inspection start node for pipes must be present. Current "
+                   "mode: {}".format(self.mode))
+            raise Exception(msg)
         return manhole_start_ref
 
     def get_work_impossible(self):
