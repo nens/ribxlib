@@ -22,6 +22,7 @@ class TestInspectionPipeParser(unittest.TestCase):
         self.parser.node = fromstring("""
         <ZB_A xmlns:gml="http://www.opengis.net/gml">
           <AAA>whee</AAA>
+          <AAB>16D0019</AAB>
           <AAD>16D0019</AAD>
           <AAE>
             <gml:Point srsDimension="2" srsName="Netherlands-RD">
