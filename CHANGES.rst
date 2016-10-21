@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.8 (unreleased)
+0.8 (2016-10-21)
 ----------------
 
 - Nothing changed yet.
