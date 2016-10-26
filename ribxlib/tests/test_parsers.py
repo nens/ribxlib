@@ -86,6 +86,19 @@ class TestInspectionPipeParserRibx_13(unittest.TestCase):
         self.assertTrue(
             p1.manhole_start in [p1.manhole1.ref, p1.manhole2.ref])
 
+    def test_namespace(self):
+        mode = Mode.INSPECTION
+        f = os.path.join(RIBX13_DATA_DIR,
+                         'RibX_Goed_2016-10-04_enkel_ZB_A_C_E_G_J_M.ribx')
+        ribx, log = parse(f, mode)
+
+        pipe_without_namespace = ribx.inspection_pipes[0]
+        pipe_with_namespace = ribx.inspection_pipes[1]
+        # Without a namespace it works:
+        self.assertTrue(pipe_without_namespace.geom)
+        # With the namespace redefinition it doesn't:
+        self.assertTrue(pipe_with_namespace.geom)
+
 
 class TestThingParser(unittest.TestCase):
     def setUp(self):
