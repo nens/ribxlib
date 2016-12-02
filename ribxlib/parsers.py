@@ -159,6 +159,7 @@ class ElementParser(object):
         instance.sourceline = item_sourceline
 
         instance.inspection_date = self.get_inspection_date()
+        instance.inspection_datetime = self.get_inspection_date_with_time()
 
         if issubclass(self.model, models.Pipe):
             # We need two manholes and two sets of coordinates.
@@ -281,12 +282,15 @@ class ElementParser(object):
 
             return explanation
 
-    def get_inspection_date(self):
+    def get_inspection_date(self, as_string=False):
         """?BF: inspection date
         In inspection mode, skip everything without an inspection date.
         ?BF must be present for something considered to be inspected!
         Occurrence: 0 for pre-inspection
         Occurrence: 1 for inspection
+
+        Args:
+            as_string: if True, return as string, else convert to datetime
         """
         node_set = self.xpath(self.tag('BF'))
 
@@ -303,12 +307,40 @@ class ElementParser(object):
             raise Exception(msg)
 
         if self.mode == Mode.INSPECTION:
-            return datetime.strptime(
-                node_set[0].text.strip(),
-                "%Y-%m-%d"
-            )
+            if as_string:
+                return node_set[0].text.strip()
+            else:
+                return datetime.strptime(
+                    node_set[0].text.strip(),
+                    "%Y-%m-%d"
+                )
         else:
             return None
+
+    def get_inspection_date_with_time(self):
+        """?BG: inspection date including the time.
+
+        ?BG is always an optional field, while the date (?BF) is required in
+        INSPECTION mode. This method will combine both ?BF and ?BG into one
+        single datetime when a ?BG tag is found (there is a bit of
+        redundancy here).
+
+        Occurrence: 0 for pre-inspection
+        Occurrence: 0..1 for inspection
+        """
+        node_set = self.xpath(self.tag('BG'))
+
+        if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
+            msg = "maxOccurs = 0 in {}".format(self.mode)
+            raise Exception(msg)
+        if self.mode == Mode.INSPECTION and len(node_set) > 0:
+            date = self.get_inspection_date(as_string=True)
+            time = node_set[0].text.strip()
+            return datetime.strptime(
+                '{} {}'.format(date, time),
+                "%Y-%m-%d %H:%M:%S"
+            )
+        return None
 
     def get_video(self):
         # ?BS: file name of video

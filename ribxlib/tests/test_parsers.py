@@ -118,3 +118,34 @@ class TestThingParser(unittest.TestCase):
 
         instance = self.parser.parse()
         self.assertTrue(instance.new)
+
+    def test_item_without_time(self):
+        self.parser.node = XML("""
+        <ZB_E>
+          <EAA>whee</EAA>
+          <EBF>2015-7-3</EBF>
+          <EXC>Don't know what kind of values go here</EXC>
+          <ZC>
+          </ZC>
+        </ZB_E>
+        """)
+
+        instance = self.parser.parse()
+        self.assertFalse(instance.inspection_datetime)
+
+    def test_item_with_bg_has_time(self):
+        self.parser.node = XML("""
+        <ZB_E>
+          <EAA>whee</EAA>
+          <EBF>2015-7-3</EBF>
+          <EBG>14:02:56</EBG>
+          <EXC>Don't know what kind of values go here</EXC>
+          <ZC>
+          </ZC>
+        </ZB_E>
+        """)
+
+        instance = self.parser.parse()
+        self.assertTrue(instance.inspection_datetime)
+        self.assertEqual(str(instance.inspection_datetime),
+                         '2015-07-03 14:02:56')
