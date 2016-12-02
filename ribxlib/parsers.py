@@ -310,10 +310,7 @@ class ElementParser(object):
             if as_string:
                 return node_set[0].text.strip()
             else:
-                return datetime.strptime(
-                    node_set[0].text.strip(),
-                    "%Y-%m-%d"
-                )
+                return datetime.strptime(node_set[0].text.strip(), "%Y-%m-%d")
         else:
             return None
 
@@ -337,9 +334,7 @@ class ElementParser(object):
             date = self.get_inspection_date(as_string=True)
             time = node_set[0].text.strip()
             return datetime.strptime(
-                '{} {}'.format(date, time),
-                "%Y-%m-%d %H:%M:%S"
-            )
+                '{} {}'.format(date, time), "%Y-%m-%d %H:%M:%S")
         return None
 
     def get_video(self):
