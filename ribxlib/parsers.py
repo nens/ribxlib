@@ -159,7 +159,6 @@ class ElementParser(object):
         instance.sourceline = item_sourceline
 
         instance.inspection_date = self.get_inspection_date()
-        instance.inspection_datetime = self.get_inspection_date_with_time()
 
         if issubclass(self.model, models.Pipe):
             # We need two manholes and two sets of coordinates.
@@ -282,15 +281,12 @@ class ElementParser(object):
 
             return explanation
 
-    def get_inspection_date(self, as_string=False):
+    def get_inspection_date_as_string(self):
         """?BF: inspection date
         In inspection mode, skip everything without an inspection date.
         ?BF must be present for something considered to be inspected!
         Occurrence: 0 for pre-inspection
         Occurrence: 1 for inspection
-
-        Args:
-            as_string: if True, return as string, else convert to datetime
         """
         node_set = self.xpath(self.tag('BF'))
 
@@ -307,14 +303,11 @@ class ElementParser(object):
             raise Exception(msg)
 
         if self.mode == Mode.INSPECTION:
-            if as_string:
-                return node_set[0].text.strip()
-            else:
-                return datetime.strptime(node_set[0].text.strip(), "%Y-%m-%d")
+            return node_set[0].text.strip()
         else:
             return None
 
-    def get_inspection_date_with_time(self):
+    def get_inspection_time_as_string(self):
         """?BG: inspection date including the time.
 
         ?BG is always an optional field, while the date (?BF) is required in
@@ -331,10 +324,20 @@ class ElementParser(object):
             msg = "maxOccurs = 0 in {}".format(self.mode)
             raise Exception(msg)
         if self.mode == Mode.INSPECTION and len(node_set) > 0:
-            date = self.get_inspection_date(as_string=True)
-            time = node_set[0].text.strip()
+            return node_set[0].text.strip()
+        return None
+
+    def get_inspection_date(self):
+        """PREINSPECTION/INSPECTION checks are delegated to
+        ``get_inspection_time_as_string`` and
+        ``get_inspection_date_as_string``."""
+        datestr = self.get_inspection_date_as_string()
+        timestr = self.get_inspection_time_as_string()
+        if timestr and datestr:
             return datetime.strptime(
-                '{} {}'.format(date, time), "%Y-%m-%d %H:%M:%S")
+                '{} {}'.format(datestr, timestr), "%Y-%m-%d %H:%M:%S")
+        if datestr:
+            return datetime.strptime(datestr, "%Y-%m-%d")
         return None
 
     def get_video(self):
