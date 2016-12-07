@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.9 (unreleased)
+0.9 (2016-12-07)
 ----------------
 
 - Add parsing of inspection time (?BG).
