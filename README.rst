@@ -25,6 +25,7 @@ The following checks are currently implemented:
 
 - ?AA (mandatory)
 - ?BF (inspection date)
+- ?BG (inspection time (optional))
 - For Pipes ZB_A and ZB_G:
 
   - ?AD and ?AF must be present (i.e., two manholes)

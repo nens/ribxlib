@@ -281,7 +281,7 @@ class ElementParser(object):
 
             return explanation
 
-    def get_inspection_date(self):
+    def get_inspection_date_as_string(self):
         """?BF: inspection date
         In inspection mode, skip everything without an inspection date.
         ?BF must be present for something considered to be inspected!
@@ -303,12 +303,42 @@ class ElementParser(object):
             raise Exception(msg)
 
         if self.mode == Mode.INSPECTION:
-            return datetime.strptime(
-                node_set[0].text.strip(),
-                "%Y-%m-%d"
-            )
+            return node_set[0].text.strip()
         else:
             return None
+
+    def get_inspection_time_as_string(self):
+        """?BG: inspection date including the time.
+
+        ?BG is always an optional field, while the date (?BF) is required in
+        INSPECTION mode. This method will combine both ?BF and ?BG into one
+        single datetime when a ?BG tag is found (there is a bit of
+        redundancy here).
+
+        Occurrence: 0 for pre-inspection
+        Occurrence: 0..1 for inspection
+        """
+        node_set = self.xpath(self.tag('BG'))
+
+        if self.mode == Mode.PREINSPECTION and len(node_set) != 0:
+            msg = "maxOccurs = 0 in {}".format(self.mode)
+            raise Exception(msg)
+        if self.mode == Mode.INSPECTION and len(node_set) > 0:
+            return node_set[0].text.strip()
+        return None
+
+    def get_inspection_date(self):
+        """PREINSPECTION/INSPECTION checks are delegated to
+        ``get_inspection_time_as_string`` and
+        ``get_inspection_date_as_string``."""
+        datestr = self.get_inspection_date_as_string()
+        timestr = self.get_inspection_time_as_string()
+        if timestr and datestr:
+            return datetime.strptime(
+                '{} {}'.format(datestr, timestr), "%Y-%m-%d %H:%M:%S")
+        if datestr:
+            return datetime.strptime(datestr, "%Y-%m-%d")
+        return None
 
     def get_video(self):
         # ?BS: file name of video
