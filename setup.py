@@ -10,8 +10,9 @@ long_description = '\n\n'.join([
 
 install_requires = [
     'enum34',
-    'setuptools',
+    'gdal',
     'lxml >= 3.3.4',  # Source line numbers above 65535
+    'setuptools',
     ],
 
 tests_require = [
