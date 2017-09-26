@@ -89,8 +89,6 @@ class Pipe(SewerElement):
         super(Pipe, self).__init__(ref)
         self.manhole1 = None
         self.manhole2 = None
-        # We're explicitly interested in angle observations ('hellingmeting')
-        self.angle_observations = []
 
     def __str__(self):
         return self.ref
@@ -108,10 +106,6 @@ class Pipe(SewerElement):
     def print_for_debug(self):
         super(Pipe, self).print_for_debug()
         print("From manhole %s to manhole %s" % (self.manhole1, self.manhole2))
-        if self.angle_observations:
-            print("%s angle observations" % len(self.angle_observations))
-            for angle_observation in self.angle_observations:
-                print("    %.02f" % angle_observation.lengthwise_location)
 
 
 class InspectionPipe(Pipe):
@@ -120,6 +114,17 @@ class InspectionPipe(Pipe):
     def __init__(self, ref):
         super(InspectionPipe, self).__init__(ref)
         self.manhole_start = None  # The starting manhole of the inspection
+        self.expected_inspection_length = None
+        # We're explicitly interested in angle observations ('hellingmeting')
+        self.angle_observations = []
+
+    def print_for_debug(self):
+        super(InspectionPipe, self).print_for_debug()
+        print("Expected inspection length: %s" % self.expected_inspection_length)
+        if self.angle_observations:
+            print("%s angle observations" % len(self.angle_observations))
+            for angle_observation in self.angle_observations:
+                print("    %.02f" % angle_observation.distance)
 
 
 class CleaningPipe(Pipe):
@@ -206,4 +211,4 @@ class AngleObservation(Observation):
 
     def __init__(self, zc_node):
         super(AngleObservation, self).__init__(zc_node)
-        self.lengthwise_location = float(zc_node.xpath('I')[0].text.strip())
+        self.distance = float(zc_node.xpath('I')[0].text.strip())
