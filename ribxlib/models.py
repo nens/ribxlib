@@ -71,6 +71,13 @@ class SewerElement(object):
         # True if a '*XC' tag was used ("ontbreekt in opdracht")
         self.new = False
 
+    def print_for_debug(self):
+        print(self.ref)
+        print('-' * len(self.ref))
+        print('')
+        print('Inspection date: %s' % self.inspection_date)
+        print('Number of expected media files: %s' % len(self.media))
+
 
 class Pipe(SewerElement):
     """Sewerage pipe (`rioolbuis` in Dutch).
@@ -82,6 +89,8 @@ class Pipe(SewerElement):
         super(Pipe, self).__init__(ref)
         self.manhole1 = None
         self.manhole2 = None
+        # We're explicitly interested in angle observations ('hellingmeting')
+        self.angle_observations = []
 
     def __str__(self):
         return self.ref
@@ -95,6 +104,14 @@ class Pipe(SewerElement):
             return line
         except Exception as e:
             logger.error(e)
+
+    def print_for_debug(self):
+        super(Pipe, self).print_for_debug()
+        print("From manhole %s to manhole %s" % (self.manhole1, self.manhole2))
+        if self.angle_observations:
+            print("%s angle observations" % len(self.angle_observations))
+            for angle_observation in self.angle_observations:
+                print("    %.02f" % angle_observation.lengthwise_location)
 
 
 class InspectionPipe(Pipe):
@@ -183,3 +200,10 @@ class Observation(object):
             path = m_node.text.strip()
             _check_filename(path)
             yield path
+
+
+class AngleObservation(Observation):
+
+    def __init__(self, zc_node):
+        super(AngleObservation, self).__init__(zc_node)
+        self.lengthwise_location = float(zc_node.xpath('I')[0].text.strip())
