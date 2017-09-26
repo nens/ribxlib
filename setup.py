@@ -21,13 +21,13 @@ tests_require = [
 
 setup(name='ribxlib',
       version=version,
-      description="TODO",
+      description="Parser for .ribx files",
       long_description=long_description,
       # Get strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[],
       keywords=[],
-      author='TODO',
-      author_email='TODO@nelen-schuurmans.nl',
+      author='Jackie Leng',
+      author_email='jackie.leng@nelen-schuurmans.nl',
       url='',
       license='GPL',
       packages=['ribxlib'],
