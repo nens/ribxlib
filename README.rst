@@ -48,3 +48,23 @@ The following checks are currently implemented:
   If the reason is 'Z' the '?DE' tag is parsed as the reason.
 - ?XC (a new sewerage element that wasn't on the planning)
 - ?ZC (observations, must be empty in PREINSPECTION mode)
+
+
+Local setup
+-----------
+
+There's a docker, so do a one-time-only::
+
+  $ docker-compose build
+
+There's no `bootstrap.py` anymore, instead just run::
+
+  $ docker-compose run web buildout
+
+And to run the tests::
+
+  $ docker-compose up
+
+Or alternatively::
+
+  $ docker-compose run web bin/test
