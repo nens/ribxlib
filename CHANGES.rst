@@ -15,6 +15,12 @@ Changelog of ribxlib
   the first observation we're looking at in more depth. (Which means the
   implementation might change later on).
 
+- Changed local development setup to use docker. Including the now-customary
+  ``Jenkinsfile`` for automatic tests.
+
+  Note: there's a small change regarding the bootstrap/buildout setup that's
+  explained in the README.
+
 
 0.9 (2016-12-07)
 ----------------
