@@ -99,6 +99,7 @@ class TestThingParser(unittest.TestCase):
           <EAA>whee</EAA>
           <EBF>2015-7-3</EBF>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
@@ -113,7 +114,8 @@ class TestThingParser(unittest.TestCase):
           <EBF>2015-7-3</EBF>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
-          </ZC>
+            <A>some type</A>
+        </ZC>
         </ZB_E>
         """)
 
@@ -127,6 +129,7 @@ class TestThingParser(unittest.TestCase):
           <EBF>2015-7-3</EBF>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
@@ -142,6 +145,7 @@ class TestThingParser(unittest.TestCase):
           <EBG>14:02:56</EBG>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
