@@ -68,3 +68,15 @@ And to run the tests::
 Or alternatively::
 
   $ docker-compose run web bin/test
+
+
+Handy debug script
+------------------
+
+There's a handy debug script that prints out information on what's been found
+in an ribx file::
+
+  $ docker-compose run web bin/ribxdebug some-file.ribx
+
+(Note: the file should be accessible for the command running inside the
+docker. ``~/Downloads/some-file.ribx`` won't work :-) )
