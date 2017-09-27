@@ -80,3 +80,6 @@ in an ribx file::
 
 (Note: the file should be accessible for the command running inside the
 docker. ``~/Downloads/some-file.ribx`` won't work :-) )
+
+To adjust the output, you should look at the various ``.print_for_debug()``
+methods in ``models.py`` first. The actual main script is in ``script.py``.
