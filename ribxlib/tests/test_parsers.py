@@ -36,6 +36,7 @@ class TestInspectionPipeParser(unittest.TestCase):
             </gml:Point>
           </AAG>
           <ABF>2015-7-3</ABF>
+          <ABQ>25</ABQ>
           <ADE>Explanation in ADE</ADE>
           <AXD ADE="Explanation in attribute">Z</AXD>
         </ZB_A>
