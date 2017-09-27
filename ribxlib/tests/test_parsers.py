@@ -163,9 +163,27 @@ class TestThingParser(unittest.TestCase):
           <EBG>14:02:56</EBG>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
 
         with self.assertRaises(Exception):
             self.parser.parse()
+
+    def test_bxa_observation_is_angle_observation(self):
+        self.parser.node = XML("""
+        <ZB_E>
+          <EAA>whee</EAA>
+          <EBF>2015-7-3</EBF>
+          <EBG>14:02:56</EBG>
+          <EXC>Don't know what kind of values go here</EXC>
+          <ZC>
+            <A>BXA</A>
+            <I>5</I>
+          </ZC>
+        </ZB_E>
+        """)
+        self.parser.parse()
+        observations = list(self.parser.get_observations())
+        self.assertTrue(isinstance(observations[0], models.AngleObservation))
