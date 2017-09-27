@@ -114,13 +114,15 @@ class InspectionPipe(Pipe):
     def __init__(self, ref):
         super(InspectionPipe, self).__init__(ref)
         self.manhole_start = None  # The starting manhole of the inspection
-        self.expected_inspection_length = None
+        self.expected_inspection_length = None  # ABQ
+        self.segment_length = None  # ACG
         # We're explicitly interested in angle observations ('hellingmeting')
         self.angle_observations = []
 
     def print_for_debug(self):
         super(InspectionPipe, self).print_for_debug()
         print("Expected inspection length: %s" % self.expected_inspection_length)
+        print("Segment length: %s" % self.segment_length)
         if self.angle_observations:
             print("%s angle observations" % len(self.angle_observations))
             for angle_observation in self.angle_observations:
