@@ -207,10 +207,8 @@ class ElementParser(object):
             instance.media.update(observation.media())
 
         if issubclass(self.model, models.InspectionPipe):
-            # We're specifically interested in angle observations
             for observation in self.get_observations():
-                if isinstance(observation, models.AngleObservation):
-                    instance.angle_observations.append(observation)
+                instance.observations.append(observation)
 
         # All well...
         return instance
@@ -384,7 +382,4 @@ class ElementParser(object):
             raise Exception(msg)
 
         for zc_node in node_set:
-            if zc_node.xpath('A')[0].text.strip() == 'BXA':
-                yield models.AngleObservation(zc_node)
-            else:
-                yield models.Observation(zc_node)
+            yield models.Observation(zc_node)
