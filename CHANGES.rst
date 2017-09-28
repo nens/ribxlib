@@ -8,7 +8,7 @@ Changelog of ribxlib
 - Added ``bin/bin/ribxdebug`` helper tool to print the info parsed from a
   .ribx file.
 
-- Added parsing of angle observarions ("hellinghoek") as that's needed for a
+- Added parsing of observation *types* and *distance* as that's needed for a
   quality checker.
 
   Previously, observations were only inspected for their media files. This is
