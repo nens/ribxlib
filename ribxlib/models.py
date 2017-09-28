@@ -116,17 +116,18 @@ class InspectionPipe(Pipe):
         self.manhole_start = None  # The starting manhole of the inspection
         self.expected_inspection_length = None  # ABQ
         self.segment_length = None  # ACG
-        # We're explicitly interested in angle observations ('hellingmeting')
-        self.angle_observations = []
+        self.observations = []
 
     def print_for_debug(self):
         super(InspectionPipe, self).print_for_debug()
         print("Expected inspection length: %s" % self.expected_inspection_length)
         print("Segment length: %s" % self.segment_length)
-        if self.angle_observations:
-            print("%s angle observations" % len(self.angle_observations))
-            for angle_observation in self.angle_observations:
-                print("    %.02f" % angle_observation.distance)
+        if self.observations:
+            print("%s observations" % len(self.observations))
+            for observation in self.observations:
+                print("    %s %s: %.02f" % (observation.observation_type,
+                                            observation.type_hint(),
+                                            observation.distance))
 
 
 class CleaningPipe(Pipe):
@@ -192,6 +193,16 @@ class Observation(object):
     """Represents the data in a ZC record, and interprets it."""
     def __init__(self, zc_node):
         self.zc_node = zc_node
+        self.distance = self._extract_value('I')
+        if self.distance is not None:
+            self.distance = float(self.distance)
+        self.observation_type = self._extract_value('A')
+
+    def _extract_value(self, tag_name):
+        try:
+            return self.zc_node.xpath(tag_name)[0].text.strip()
+        except:  # Bare except
+            return None
 
     def media(self):
         """Generate the filenames mentioned. Raises ParseException if something
@@ -208,9 +219,9 @@ class Observation(object):
             _check_filename(path)
             yield path
 
-
-class AngleObservation(Observation):
-
-    def __init__(self, zc_node):
-        super(AngleObservation, self).__init__(zc_node)
-        self.distance = float(zc_node.xpath('I')[0].text.strip())
+    def type_hint(self):
+        known = {'BXA': 'hellingmeting',
+                 'BDC': 'afbreking inspectie',
+                 'BCE': 'afbreking',
+                 }
+        return known.get(self.observation_type, '')
