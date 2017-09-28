@@ -171,7 +171,7 @@ class TestThingParser(unittest.TestCase):
         with self.assertRaises(Exception):
             self.parser.parse()
 
-    def test_bxa_observation_is_angle_observation(self):
+    def test_observation_type(self):
         self.parser.node = XML("""
         <ZB_E>
           <EAA>whee</EAA>
@@ -186,4 +186,4 @@ class TestThingParser(unittest.TestCase):
         """)
         self.parser.parse()
         observations = list(self.parser.get_observations())
-        self.assertTrue(isinstance(observations[0], models.AngleObservation))
+        self.assertEqual(observations[0].observation_type, 'BXA')
