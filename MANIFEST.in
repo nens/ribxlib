@@ -1,4 +1,14 @@
-# Include docs in the root.
+include *.py
 include *.rst
-# Include everything in our project directory.
+include .coveragerc
+include *.cfg
+exclude .*.cfg
+exclude Jenkinsfile
 graft ribxlib
+recursive-exclude ribxlib *.pyc
+graft testdata
+recursive-include doc *.py
+recursive-include doc *.rst
+recursive-include doc *.pdf
+exclude *.yml
+exclude Dockerfile
