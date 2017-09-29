@@ -48,3 +48,38 @@ The following checks are currently implemented:
   If the reason is 'Z' the '?DE' tag is parsed as the reason.
 - ?XC (a new sewerage element that wasn't on the planning)
 - ?ZC (observations, must be empty in PREINSPECTION mode)
+
+
+Local setup
+-----------
+
+There's a docker, so do a one-time-only::
+
+  $ docker-compose build
+
+There's no `bootstrap.py` anymore, instead just run::
+
+  $ docker-compose run web buildout
+
+And to run the tests::
+
+  $ docker-compose up
+
+Or alternatively::
+
+  $ docker-compose run web bin/test
+
+
+Handy debug script
+------------------
+
+There's a handy debug script that prints out information on what's been found
+in a ribx file::
+
+  $ docker-compose run web bin/ribxdebug some-file.ribx
+
+(Note: the file should be accessible for the command running inside the
+docker. ``~/Downloads/some-file.ribx`` won't work :-) )
+
+To adjust the output, you should look at the various ``.print_for_debug()``
+methods in ``models.py`` first. The actual main script is in ``script.py``.

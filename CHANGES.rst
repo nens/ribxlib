@@ -5,7 +5,21 @@ Changelog of ribxlib
 0.10 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Added ``bin/bin/ribxdebug`` helper tool to print the info parsed from a
+  .ribx file.
+
+- Added parsing of observation *types* and *distance* as that's needed for a
+  quality checker.
+
+  Previously, observations were only inspected for their media files. This is
+  the first observation we're looking at in more depth. (Which means the
+  implementation might change later on).
+
+- Changed local development setup to use docker. Including the now-customary
+  ``Jenkinsfile`` for automatic tests.
+
+  Note: there's a small change regarding the bootstrap/buildout setup that's
+  explained in the README.
 
 
 0.9 (2016-12-07)

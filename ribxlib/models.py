@@ -71,6 +71,13 @@ class SewerElement(object):
         # True if a '*XC' tag was used ("ontbreekt in opdracht")
         self.new = False
 
+    def print_for_debug(self):
+        print(self.ref)
+        print('-' * len(self.ref))
+        print('')
+        print('Inspection date: %s' % self.inspection_date)
+        print('Number of expected media files: %s' % len(self.media))
+
 
 class Pipe(SewerElement):
     """Sewerage pipe (`rioolbuis` in Dutch).
@@ -96,6 +103,10 @@ class Pipe(SewerElement):
         except Exception as e:
             logger.error(e)
 
+    def print_for_debug(self):
+        super(Pipe, self).print_for_debug()
+        print("From manhole %s to manhole %s" % (self.manhole1, self.manhole2))
+
 
 class InspectionPipe(Pipe):
     tag = 'ZB_A'
@@ -103,6 +114,20 @@ class InspectionPipe(Pipe):
     def __init__(self, ref):
         super(InspectionPipe, self).__init__(ref)
         self.manhole_start = None  # The starting manhole of the inspection
+        self.expected_inspection_length = None  # ABQ
+        self.segment_length = None  # ACG
+        self.observations = []
+
+    def print_for_debug(self):
+        super(InspectionPipe, self).print_for_debug()
+        print("Expected inspection length: %s" % self.expected_inspection_length)
+        print("Segment length: %s" % self.segment_length)
+        if self.observations:
+            print("%s observations" % len(self.observations))
+            for observation in self.observations:
+                print("    %s %s: %.02f" % (observation.observation_type,
+                                            observation.type_hint(),
+                                            observation.distance))
 
 
 class CleaningPipe(Pipe):
@@ -168,6 +193,16 @@ class Observation(object):
     """Represents the data in a ZC record, and interprets it."""
     def __init__(self, zc_node):
         self.zc_node = zc_node
+        self.distance = self._extract_value('I')
+        if self.distance is not None:
+            self.distance = float(self.distance)
+        self.observation_type = self._extract_value('A')
+
+    def _extract_value(self, tag_name):
+        try:
+            return self.zc_node.xpath(tag_name)[0].text.strip()
+        except:  # Bare except
+            return None
 
     def media(self):
         """Generate the filenames mentioned. Raises ParseException if something
@@ -183,3 +218,10 @@ class Observation(object):
             path = m_node.text.strip()
             _check_filename(path)
             yield path
+
+    def type_hint(self):
+        known = {'BXA': 'hellingmeting',
+                 'BDC': 'afbreking inspectie',
+                 'BCE': 'afbreking',
+                 }
+        return known.get(self.observation_type, '')

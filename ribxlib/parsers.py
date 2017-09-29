@@ -177,6 +177,12 @@ class ElementParser(object):
             if issubclass(self.model, models.InspectionPipe):
                 if self.mode == Mode.INSPECTION:
                     instance.manhole_start = self.get_manhole_start(instance)
+                    value, sourceline = self.tag_value('BQ')
+                    if value is not None:
+                        instance.expected_inspection_length = float(value)
+                    value2, sourceline = self.tag_value('CG')
+                    if value2 is not None:
+                        instance.segment_length = float(value2)
 
         else:
             # ?AB holds coordinates
@@ -199,6 +205,10 @@ class ElementParser(object):
         # ZC nodes
         for observation in self.get_observations():
             instance.media.update(observation.media())
+
+        if issubclass(self.model, models.InspectionPipe):
+            for observation in self.get_observations():
+                instance.observations.append(observation)
 
         # All well...
         return instance

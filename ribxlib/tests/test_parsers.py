@@ -36,6 +36,7 @@ class TestInspectionPipeParser(unittest.TestCase):
             </gml:Point>
           </AAG>
           <ABF>2015-7-3</ABF>
+          <ABQ>25</ABQ>
           <ADE>Explanation in ADE</ADE>
           <AXD ADE="Explanation in attribute">Z</AXD>
         </ZB_A>
@@ -98,6 +99,7 @@ class TestThingParser(unittest.TestCase):
           <EAA>whee</EAA>
           <EBF>2015-7-3</EBF>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
@@ -112,7 +114,8 @@ class TestThingParser(unittest.TestCase):
           <EBF>2015-7-3</EBF>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
-          </ZC>
+            <A>some type</A>
+        </ZC>
         </ZB_E>
         """)
 
@@ -126,6 +129,7 @@ class TestThingParser(unittest.TestCase):
           <EBF>2015-7-3</EBF>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
@@ -141,6 +145,7 @@ class TestThingParser(unittest.TestCase):
           <EBG>14:02:56</EBG>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
@@ -158,9 +163,27 @@ class TestThingParser(unittest.TestCase):
           <EBG>14:02:56</EBG>
           <EXC>Don't know what kind of values go here</EXC>
           <ZC>
+            <A>some type</A>
           </ZC>
         </ZB_E>
         """)
 
         with self.assertRaises(Exception):
             self.parser.parse()
+
+    def test_observation_type(self):
+        self.parser.node = XML("""
+        <ZB_E>
+          <EAA>whee</EAA>
+          <EBF>2015-7-3</EBF>
+          <EBG>14:02:56</EBG>
+          <EXC>Don't know what kind of values go here</EXC>
+          <ZC>
+            <A>BXA</A>
+            <I>5</I>
+          </ZC>
+        </ZB_E>
+        """)
+        self.parser.parse()
+        observations = list(self.parser.get_observations())
+        self.assertEqual(observations[0].observation_type, 'BXA')

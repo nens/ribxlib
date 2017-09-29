@@ -39,5 +39,6 @@ setup(name='ribxlib',
       extras_require={'test': tests_require},
       entry_points={
           'console_scripts': [
+              'ribxdebug = ribxlib.script:main',
           ]},
       )
