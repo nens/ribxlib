@@ -2,7 +2,7 @@ Changelog of ribxlib
 ===================================================
 
 
-0.10 (unreleased)
+0.10 (2017-09-29)
 -----------------
 
 - Added ``bin/bin/ribxdebug`` helper tool to print the info parsed from a
