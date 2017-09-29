@@ -74,7 +74,7 @@ Handy debug script
 ------------------
 
 There's a handy debug script that prints out information on what's been found
-in an ribx file::
+in a ribx file::
 
   $ docker-compose run web bin/ribxdebug some-file.ribx
 
